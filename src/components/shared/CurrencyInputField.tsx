@@ -1,18 +1,13 @@
 import React from "react"
-import {Either} from "fp-ts/Either"
-import {NumericInputField} from "./NumericInputField.tsx"
+import {NumericInputField, NumericInputFieldProps} from "./NumericInputField.tsx"
 
 
-interface CurrencyInputFieldProps {
-  defaultValue?: number
-  label: string
-  validate?: (value: number) => Either<string, true>
-  onChange?: (newValue: number) => void
+interface CurrencyInputFieldProps extends Omit<NumericInputFieldProps, 'suffix'> {
 }
 
 export const CurrencyInputField: React.FC<CurrencyInputFieldProps> = (props: CurrencyInputFieldProps) => {
   return (
-    <NumericInputField label={props.label} onChange={props.onChange} validate={props.validate}
-                       defaultValue={props.defaultValue} suffix={"€"} />
+    <NumericInputField label={props.label} onValueChange={props.onValueChange} validate={props.validate}
+                       defaultValue={props.defaultValue} suffix={"€"} {...props}/>
   )
 }
