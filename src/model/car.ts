@@ -48,10 +48,14 @@ export function buildCarExpensesCalculator(config: CarExpenses): CarExpensesCalc
   return calculator
 }
 
+const COMPONENT_NAME = "Car"
+
 function upfrontOnlyCalculator(config: CarUpfrontOnly): CarCalculator {
   return function(period: Period): MonthlyReport {
     const totalExpenses = doesPeriodAndDateMatch(config.date, period) ? config.upfront : 0
     return {
+      component: COMPONENT_NAME,
+      totalIncome: 0,
       period,
       totalExpenses,
       detailedExpenses: {
@@ -72,6 +76,8 @@ function monthlyRateAndUpfrontCalculator(config: CarMonthlyRateAndUpfront): CarC
 
     return {
       period,
+      component: COMPONENT_NAME,
+      totalIncome: 0,
       totalExpenses: monthlyRate + upfrontCost,
       detailedExpenses: {
         ...(upfrontCost > 0 && {"upfront": upfrontCost}),
@@ -89,6 +95,8 @@ function monthlyRateCalculator(config: CarMonthlyRateOnly): CarCalculator {
       durationInMonths: config.duration
     }) ? config.monthlyRate : 0
     return {
+      component: COMPONENT_NAME,
+      totalIncome: 0,
       period,
       totalExpenses,
       detailedExpenses: {
