@@ -1,11 +1,13 @@
 import {configureStore} from "@reduxjs/toolkit"
 import carReducer from "./car/car-reducer.ts"
 import {useDispatch, useSelector} from "react-redux"
+import incomeReducer from "./income/income-reducer.ts"
 
 
 const store = configureStore({
   reducer: {
-    car: carReducer
+    car: carReducer,
+    income: incomeReducer
   }
 })
 
