@@ -3,7 +3,7 @@ import {CurrencyInputField} from "./shared/CurrencyInputField.tsx"
 import React, {ChangeEvent, useEffect, useState} from "react"
 import {Either} from "fp-ts/Either"
 import {either} from "fp-ts"
-import {useAppDispatch} from "../state/store.ts"
+import {useAppDispatch, useAppSelector} from "../state/store.ts"
 import {YoYGrowth} from "../state/income/income-state.ts"
 import {
   setMonthlyIncomeRate as setMonthlyIncomeRateAction,
@@ -16,17 +16,14 @@ import {
 interface IncomeComponentProps {
 }
 
-const YOY_GROWTH_DEFAULT_VALUE = 1.2
-const STARTING_MONEY_DEFAULT_VALUE = 0
-const MONTHLY_NET_INCOME_DEFAULT_VALUE = 0
-const ENABLE_YOY_GROWTH_DEFAULT_VALUE = true
+const YOY_GROWTH_DEFAULT_VALUE = 2
 const STARTING_MONEY_STEP_INCREMENT = 5000
 const MONTHLY_INCOME_STEP_INCREMENT = 200
 
 const yoyGrowthMarks = [
   {
     value: 1,
-    label: "1 %"
+    label: "1%"
   },
   {
     value: 2,
@@ -46,13 +43,16 @@ const yoyGrowthMarks = [
 export const IncomeComponent: React.FC<IncomeComponentProps> = (_: IncomeComponentProps) => {
 
   const dispatch = useAppDispatch()
+  const state = useAppSelector(state => state.income)
 
-  const [startingMoney, setStartingMoney] = useState<number>(STARTING_MONEY_DEFAULT_VALUE)
-  const [monthlyNetIncome, setMonthlyNetIncome] = useState<number>(MONTHLY_NET_INCOME_DEFAULT_VALUE)
-  const [enableYoYGrowth, setEnableYoYGrowth] = useState<boolean>(ENABLE_YOY_GROWTH_DEFAULT_VALUE)
-  const [yoYGrowthPercentage, setYoYGrowthPercentage] = useState<number>(YOY_GROWTH_DEFAULT_VALUE)
-  const [enableTredicesima, setEnableTredicesima] = useState<boolean>(true)
-  const [enableQuattordicesima, setEnableQuattordicesima] = useState<boolean>(false)
+  const yoYGrowthPercentageInitialValue = state.yoyGrowth.type !== "GrowthDisable" ? state.yoyGrowth.percentage : YOY_GROWTH_DEFAULT_VALUE
+
+  const [startingMoney, setStartingMoney] = useState<number>(state.startingMoney)
+  const [monthlyNetIncome, setMonthlyNetIncome] = useState<number>(state.monthlyIncomeRate)
+  const [enableYoYGrowth, setEnableYoYGrowth] = useState<boolean>(state.yoyGrowth.type !== "GrowthDisable")
+  const [yoYGrowthPercentage, setYoYGrowthPercentage] = useState<number>(yoYGrowthPercentageInitialValue)
+  const [enableTredicesima, setEnableTredicesima] = useState<boolean>(state.tredicesima)
+  const [enableQuattordicesima, setEnableQuattordicesima] = useState<boolean>(state.quattordicesima)
 
 
   const onYoyCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -124,7 +124,7 @@ export const IncomeComponent: React.FC<IncomeComponentProps> = (_: IncomeCompone
       <Slider
         id={"yoySlider"}
         aria-label="Restricted values"
-        defaultValue={20}
+        defaultValue={yoYGrowthPercentage}
         getAriaValueText={(value) => `${value}%`}
         step={null}
         valueLabelDisplay="auto"

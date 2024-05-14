@@ -1,11 +1,17 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit"
 import {IncomeState, YoYGrowth} from "./income-state.ts"
 
+const STARTING_MONEY_DEFAULT_VALUE = 0
+const MONTHLY_NET_INCOME_DEFAULT_VALUE = 0
+const TREDICESIMA_DEFAULT_VALUE = false
+const QUATTORDICESIMA_DEFAULT_VALUE = false
+
+
 const initialState: IncomeState = {
-  quattordicesima: false,
-  tredicesima: false,
-  monthlyIncomeRate: 0,
-  startingMoney: 0,
+  quattordicesima: QUATTORDICESIMA_DEFAULT_VALUE,
+  tredicesima: TREDICESIMA_DEFAULT_VALUE,
+  monthlyIncomeRate: MONTHLY_NET_INCOME_DEFAULT_VALUE,
+  startingMoney: STARTING_MONEY_DEFAULT_VALUE,
   yoyGrowth: {type: "GrowthDisable"}
 }
 
