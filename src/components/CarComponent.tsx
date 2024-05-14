@@ -10,7 +10,7 @@ import {
   setStartPaymentDateAction,
   setUpfrontAction
 } from "../state/car/car-reducer.ts"
-import {useAppDispatch} from "../state/store.ts"
+import {useAppDispatch, useAppSelector} from "../state/store.ts"
 import {DatePicker} from "@mui/x-date-pickers"
 import dayjs, {Dayjs} from "dayjs"
 import {getFirstDayOfNextMonthsFrom} from "../utils/date.ts"
@@ -19,18 +19,15 @@ interface CarProps {
   disabled: boolean
 }
 
-const DURATION_DEFAULT_VALUE = 24
-const MONTHLY_RATE_DEFAULT_VALUE = 400
-const UPFRONT_DEFAULT_VALUE = 5000
-
 export const CarComponent: React.FC<CarProps> = (props: CarProps) => {
 
+  const state = useAppSelector(state => state.car)
   const datePickerMinDate = getFirstDayOfNextMonthsFrom(new Date(), 1)
 
   const dispatch = useAppDispatch()
-  const [duration, setDuration] = useState<number>(DURATION_DEFAULT_VALUE)
-  const [monthlyRate, setMonthlyRate] = useState<number>(MONTHLY_RATE_DEFAULT_VALUE)
-  const [upfront, setUpfront] = useState<number>(UPFRONT_DEFAULT_VALUE)
+  const [duration, setDuration] = useState<number>(state.duration)
+  const [monthlyRate, setMonthlyRate] = useState<number>(state.monthlyRate)
+  const [upfront, setUpfront] = useState<number>(state.upfrontPayment)
   const [startPayingFrom, setStartPayingFrom] = useState<Date>(datePickerMinDate)
 
   const onDurationChange = (value: number) => {

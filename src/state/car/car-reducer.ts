@@ -1,11 +1,15 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit"
 import {CarState} from "./car-state.ts"
 
+const DURATION_DEFAULT_VALUE = 24
+const MONTHLY_RATE_DEFAULT_VALUE = 400
+const UPFRONT_DEFAULT_VALUE = 5000
+
 const initialState: CarState = {
-  duration: 0,
-  monthlyRate: 0,
+  duration: DURATION_DEFAULT_VALUE,
+  monthlyRate: MONTHLY_RATE_DEFAULT_VALUE,
   startPaymentDateIsoString: new Date().toISOString(),
-  upfrontPayment: 0
+  upfrontPayment: UPFRONT_DEFAULT_VALUE
 }
 
 const carSlice = createSlice({
@@ -15,13 +19,13 @@ const carSlice = createSlice({
     setDuration: (state, action: PayloadAction<number>) => {
       state.duration = action.payload
     },
-    setMonthlyRateAction: (state, action : PayloadAction<number>) => {
+    setMonthlyRateAction: (state, action: PayloadAction<number>) => {
       state.monthlyRate = action.payload
     },
-    setStartPaymentDateAction: (state, action : PayloadAction<string>) => {
+    setStartPaymentDateAction: (state, action: PayloadAction<string>) => {
       state.startPaymentDateIsoString = action.payload
     },
-    setUpfrontAction: (state, action : PayloadAction<number>) => {
+    setUpfrontAction: (state, action: PayloadAction<number>) => {
       state.upfrontPayment = action.payload
     }
   }
