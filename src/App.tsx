@@ -1,43 +1,47 @@
 import "./App.css"
 import {CarComponent} from "./components/CarComponent.tsx"
 import {CostsProjectionComponent, Report} from "./components/CostsProjectionComponent.tsx"
-import {Grid, TextField} from "@mui/material"
-import React, {useState} from "react"
+import {
+  Box,
+  Container,
+  Divider,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText
+} from "@mui/material"
 import {useAppSelector} from "./state/store.ts"
 import {getFirstDayOfNextMonthsFrom} from "./utils/date.ts"
 import {buildCarExpensesCalculator} from "./model/car.ts"
 import {SummaryComponent} from "./components/SummaryComponent.tsx"
 import {IncomeComponent} from "./components/IncomeComponent.tsx"
 import {buildIncomeCalculator, GrowthOptions} from "./model/income.ts"
+import EuroTwoToneIcon from "@mui/icons-material/EuroTwoTone"
+import DirectionsCarFilledTwoToneIcon from "@mui/icons-material/DirectionsCarFilledTwoTone"
+import TrendingUpTwoToneIcon from "@mui/icons-material/TrendingUpTwoTone"
+import {BrowserRouter, Link, Route, Routes} from "react-router-dom"
+import AnalyticsIcon from "@mui/icons-material/Analytics"
+import SettingsTwoToneIcon from "@mui/icons-material/SettingsTwoTone"
+import {SettingsComponent} from "./components/SettingsComponent.tsx"
 
-const SIMULATION_LENGTH_IN_YEARS = 10
-const SIMULATION_RESOLUTION_IN_MONTHS = 1
 const ONE_YEAR_IN_MS = 1 * 1000 * 60 * 60 * 24 * 365
 
+const DRAWER_WIDTH = 240
+
 function App() {
-  const [simulationLengthInYears, setSimulationLengthInYears] = useState(SIMULATION_LENGTH_IN_YEARS)
-  const [simulationResolutionInMonths, setSimulationResolutionInMonth] = useState(SIMULATION_RESOLUTION_IN_MONTHS)
+  const settingsState = useAppSelector(state => state.settings)
   const carState = useAppSelector(state => state.car)
   const incomeState = useAppSelector(state => state.income)
 
-  const simulationLengthOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value
-    const parsedValue = parseFloat(value)
-    setSimulationLengthInYears(parsedValue)
-  }
-
-  const simulationResolutionOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value
-    const parsedValue = parseFloat(value)
-    setSimulationResolutionInMonth(parsedValue)
-  }
 
   const records: Report[] = []
 
   const now = new Date(Date.now())
   const simulationStartDate = getFirstDayOfNextMonthsFrom(now, 1)
   let simulationCurrentDate = simulationStartDate
-  const simulationEndingDate = new Date(simulationStartDate.getTime() + (ONE_YEAR_IN_MS * simulationLengthInYears))
+  const simulationEndingDate = new Date(simulationStartDate.getTime() + (ONE_YEAR_IN_MS * settingsState.yearsOfSimulation))
 
   const carExpensesCalculator = buildCarExpensesCalculator({
     type: "CarMonthlyRateAndUpfront",
@@ -79,30 +83,95 @@ function App() {
     }
 
     records.push(record)
-    simulationCurrentDate = getFirstDayOfNextMonthsFrom(simulationCurrentDate, simulationResolutionInMonths)
+    simulationCurrentDate = getFirstDayOfNextMonthsFrom(simulationCurrentDate, settingsState.resolutionInMonths)
   }
 
   return (
-    <>
-      <Grid container spacing={2} padding={2}>
-        <Grid xs={6}>
-          <IncomeComponent />
-          <CarComponent disabled={false} />
+    <BrowserRouter>
+      <Box sx={{display: "flex"}}>
+        <Drawer
+          sx={{
+            width: DRAWER_WIDTH,
+            flexShrink: 0,
+            "& .MuiDrawer-paper": {
+              width: DRAWER_WIDTH,
+              boxSizing: "border-box"
+            }
+          }}
+          variant="permanent"
+          anchor="left"
+        >
+          <List>
+            <ListItem key={"Summary"} disablePadding>
+              <Link to="/">
+                <ListItemButton>
+                  <ListItemIcon>
+                    <AnalyticsIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={"Summary"} />
+                </ListItemButton>
+              </Link>
+            </ListItem>
+            <ListItem key={"Projection"} disablePadding>
+              <Link to="/projection">
+                <ListItemButton>
+                  <ListItemIcon>
+                    <TrendingUpTwoToneIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={"Projection"} />
+                </ListItemButton>
+              </Link>
+            </ListItem>
+            <Divider />
+            <ListItem key={"Income"} disablePadding>
+              <Link to="/income">
+                <ListItemButton>
+                  <ListItemIcon>
+                    <EuroTwoToneIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={"Income"} />
+                </ListItemButton>
+              </Link>
+            </ListItem>
+            <ListItem key={"Car"} disablePadding>
+              <Link to="/car">
+                <ListItemButton>
+                  <ListItemIcon>
+                    <DirectionsCarFilledTwoToneIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={"Car"} />
+                </ListItemButton>
+              </Link>
+            </ListItem>
+            <Divider />
+            <ListItem key={"Settings"} disablePadding>
+              <Link to="/settings">
+                <ListItemButton>
+                  <ListItemIcon>
+                    <SettingsTwoToneIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={"Settings"} />
+                </ListItemButton>
+              </Link>
+            </ListItem>
 
-        </Grid>
-        <Grid xs={4}>
-          <SummaryComponent records={records} />
-        </Grid>
-        <Grid xs={12} padding={2}>
-          <TextField label={"Number of years"} defaultValue={simulationLengthInYears} type={"number"}
-                     onChange={simulationLengthOnChange} />
-          <TextField label={"Resolution (months)"} defaultValue={simulationResolutionInMonths} type={"number"}
-                     onChange={simulationResolutionOnChange} />
-          <div>Start date: {simulationStartDate.toDateString()} End date: {simulationEndingDate.toDateString()}</div>
-          <CostsProjectionComponent data={records} />
-        </Grid>
-      </Grid>
-    </>
+          </List>
+        </Drawer>
+
+        <Container maxWidth="xl">
+
+          <Routes>
+            <Route path="/" element={<SummaryComponent simulationStartDate={simulationStartDate}
+                                                       simulationEndingDate={simulationEndingDate}
+                                                       records={records} />} />
+            <Route path="/projection" element={<CostsProjectionComponent data={records} />} />
+            <Route path="/income" element={<IncomeComponent />} />
+            <Route path="/car" element={<CarComponent disabled={false} />} />
+            <Route path="/settings" element={<SettingsComponent />} />
+          </Routes>
+        </Container>
+      </Box>
+    </BrowserRouter>
   )
 }
 

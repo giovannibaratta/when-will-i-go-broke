@@ -4,12 +4,14 @@ import React from "react"
 import {formatNumberToEuro} from "../utils/print.ts"
 
 export interface SummaryComponentProps {
+  simulationStartDate: Date,
+  simulationEndingDate: Date,
   records: ReadonlyArray<Report>
 }
 
 export const SummaryComponent: React.FC<SummaryComponentProps> = (props: SummaryComponentProps) => {
 
-  const {records} = props
+  const {records, simulationEndingDate, simulationStartDate} = props
 
   const summary = records.reduce<{
     readonly totalExpenses: number,
@@ -26,6 +28,8 @@ export const SummaryComponent: React.FC<SummaryComponentProps> = (props: Summary
 
   return (
     <>
+      <div>Start date: {simulationStartDate.toDateString()} End
+        date: {simulationEndingDate.toDateString()}</div>
       <Paper>
         <h3>Balance {formatNumberToEuro(balance)}</h3>
       </Paper>
