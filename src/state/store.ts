@@ -5,6 +5,7 @@ import incomeReducer from "./income/income-reducer.ts"
 import settingsReducer from "./settings/settings-reducer.ts"
 import storage from "redux-persist/lib/storage"
 import {persistReducer, persistStore} from "redux-persist"
+import houseReducer from "./house/house-reducer.ts"
 
 
 const persistConfig = {
@@ -15,6 +16,7 @@ const persistConfig = {
 const reducers = combineReducers({
   car: carReducer,
   income: incomeReducer,
+  house: houseReducer,
   settings: settingsReducer
 })
 
