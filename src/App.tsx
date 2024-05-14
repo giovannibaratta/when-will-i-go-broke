@@ -27,6 +27,7 @@ import SettingsTwoToneIcon from "@mui/icons-material/SettingsTwoTone"
 import {SettingsComponent} from "./components/SettingsComponent.tsx"
 import {HouseComponent} from "./components/HouseComponent.tsx"
 import HouseIcon from "@mui/icons-material/House"
+import {buildHouseExpensesCalculator} from "./model/house.ts"
 
 const ONE_YEAR_IN_MS = 1 * 1000 * 60 * 60 * 24 * 365
 
@@ -36,7 +37,7 @@ function App() {
   const settingsState = useAppSelector(state => state.settings)
   const carState = useAppSelector(state => state.car)
   const incomeState = useAppSelector(state => state.income)
-
+  const houseState = useAppSelector(state => state.house)
 
   const records: Report[] = []
 
@@ -68,6 +69,14 @@ function App() {
     growth
   })
 
+  const houseCalculator = buildHouseExpensesCalculator({
+    durationInYears: houseState.duration,
+    startDate: new Date(houseState.startPaymentDateIsoString),
+    totalHouseCost: houseState.totalHouseCost,
+    interestRate: houseState.interestRate,
+    ltvPercentage: houseState.ltvPercentage
+  })
+
   while (simulationCurrentDate.getTime() < simulationEndingDate.getTime()) {
 
     const period = {
@@ -77,11 +86,12 @@ function App() {
 
     const carReport = carExpensesCalculator.computeMonthlyReport(period)
     const incomeReport = incomeCalculator.computeMonthlyReport(period)
+    const houseReport = houseCalculator.computeMonthlyReport(period)
 
     const record: Report = {
       date: simulationCurrentDate,
       income: incomeReport.totalIncome,
-      totalMonthExpenses: carReport.totalExpenses
+      totalMonthExpenses: carReport.totalExpenses + houseReport.totalExpenses
     }
 
     records.push(record)
