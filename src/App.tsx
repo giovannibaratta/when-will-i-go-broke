@@ -25,6 +25,8 @@ import {BrowserRouter, Link, Route, Routes} from "react-router-dom"
 import AnalyticsIcon from "@mui/icons-material/Analytics"
 import SettingsTwoToneIcon from "@mui/icons-material/SettingsTwoTone"
 import {SettingsComponent} from "./components/SettingsComponent.tsx"
+import {HouseComponent} from "./components/HouseComponent.tsx"
+import HouseIcon from "@mui/icons-material/House"
 
 const ONE_YEAR_IN_MS = 1 * 1000 * 60 * 60 * 24 * 365
 
@@ -133,6 +135,16 @@ function App() {
                 </ListItemButton>
               </Link>
             </ListItem>
+            <ListItem key={"House"} disablePadding>
+              <Link to="/house">
+                <ListItemButton>
+                  <ListItemIcon>
+                    <HouseIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={"House"} />
+                </ListItemButton>
+              </Link>
+            </ListItem>
             <ListItem key={"Car"} disablePadding>
               <Link to="/car">
                 <ListItemButton>
@@ -167,6 +179,7 @@ function App() {
             <Route path="/projection" element={<CostsProjectionComponent data={records} />} />
             <Route path="/income" element={<IncomeComponent />} />
             <Route path="/car" element={<CarComponent disabled={false} />} />
+            <Route path="/house" element={<HouseComponent />} />
             <Route path="/settings" element={<SettingsComponent />} />
           </Routes>
         </Container>
