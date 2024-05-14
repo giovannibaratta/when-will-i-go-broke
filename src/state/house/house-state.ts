@@ -3,4 +3,5 @@ export interface HouseState {
   ltvPercentage: number;
   interestRate: number;
   duration: number;
+  startPaymentDateIsoString: string
 }

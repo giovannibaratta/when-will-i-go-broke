@@ -5,6 +5,9 @@ import {NumericInputField} from "./shared/NumericInputField.tsx"
 import {PercentageInputField} from "./shared/PercentageInputField.tsx"
 import {useAppDispatch, useAppSelector} from "../state/store.ts"
 import {houseActions} from "../state/house/house-reducer.ts"
+import {getFirstDayOfNextMonthsFrom} from "../utils/date.ts"
+import dayjs, {Dayjs} from "dayjs"
+import {DatePicker} from "@mui/x-date-pickers"
 
 interface HouseComponentProps {
 }
@@ -17,11 +20,13 @@ const INTEREST_RATE_STEP_INCREMENT = 0.1
 export const HouseComponent: React.FC<HouseComponentProps> = () => {
 
   const state = useAppSelector(state => state.house)
+  const datePickerMinDate = getFirstDayOfNextMonthsFrom(new Date(), 1)
 
   const [totalHouseCost, setTotalHouseCost] = useState(state.totalHouseCost)
   const [ltvPercentage, setLtvPercentage] = useState(state.ltvPercentage)
   const [interestRate, setInterestRate] = useState(state.interestRate)
   const [duration, setDuration] = useState(state.duration)
+  const [startPayingFrom, setStartPayingFrom] = useState<Date>(new Date(state.startPaymentDateIsoString))
 
   const handleTotalHouseCostChange = (value: number) => {
     setTotalHouseCost(value)
@@ -37,6 +42,11 @@ export const HouseComponent: React.FC<HouseComponentProps> = () => {
 
   const handleDurationChange = (value: number) => {
     setDuration(value)
+  }
+
+  const onStartPaymentFromChange = (value: Dayjs | null) => {
+    if (value !== null)
+      setStartPayingFrom(value.toDate())
   }
 
   const dispatch = useAppDispatch()
@@ -58,6 +68,10 @@ export const HouseComponent: React.FC<HouseComponentProps> = () => {
   useEffect(() => {
     dispatch(houseActions.setDuration(duration))
   }, [dispatch, duration])
+
+  useEffect(() => {
+    dispatch(houseActions.setStartPaymentDateAction(startPayingFrom.toDateString()))
+  }, [dispatch, startPayingFrom])
 
   return (
     <Container>
@@ -85,6 +99,8 @@ export const HouseComponent: React.FC<HouseComponentProps> = () => {
         value={duration}
         onValueChange={handleDurationChange}
       />
+      <DatePicker defaultValue={dayjs(startPayingFrom)} label="Start payment from" views={["month", "year"]}
+                  minDate={dayjs(datePickerMinDate)} onChange={onStartPaymentFromChange} />
     </Container>
   )
 }
