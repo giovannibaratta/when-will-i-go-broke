@@ -83,7 +83,7 @@ function App() {
     livingRoomCosts: houseState.furniture.livingRoomCosts,
     bedroomCosts: houseState.furniture.bedroomCosts,
     bathroomCosts: houseState.furniture.bathroomCosts,
-    interestRatePercentage: 5,
+    interestRatePercentage: settingsState.defaultInterestRateInPercent,
     loanStartDate: new Date(houseState.furniture.loanStartDateIsoString),
     loanDurationInMonths: houseState.furniture.loanDurationInMonths
   })
