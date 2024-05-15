@@ -43,12 +43,12 @@ jobs:
           cache: yarn
 
       - name: Yarn install
-        uses: borales/actions-yarn@v4
+        uses: borales/actions-yarn@v5
         with:
           cmd: install
 
       - name: Build
-        uses: borales/actions-yarn@v4
+        uses: borales/actions-yarn@v5
         with:
           cmd: build
 
