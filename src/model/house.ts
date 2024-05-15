@@ -1,5 +1,6 @@
 // Interface to represent house costs
 import {MonthlyReport, Period} from "./monthly-report.ts"
+import {computeMonthlyPaymentForFixedInterestRateLoan} from "../utils/finance.ts"
 
 interface HouseCosts {
   totalHouseCost: number;
@@ -20,22 +21,13 @@ export function buildHouseExpensesCalculator(config: HouseCosts): HouseCostsCalc
   }
 }
 
-// Formula for computing monthly payment for fixed interest rates
-// M = P [ I(1 + I)^N ] / [ (1 + I)^N − 1]
-// M = Monthly payment
-// P = Principal amount
-// I = monthly Interest rate
-// N = Number of payments
 function computeMonthlyCosts(houseCosts: HouseCosts): (period: Period) => MonthlyReport {
 
-  // Principal amount
-  const p = houseCosts.totalHouseCost * houseCosts.ltvPercentage / 100
-  // monthly interest rate
-  const i = houseCosts.interestRate / 100 / 12
-  // number of payments
-  const n = houseCosts.durationInYears * 12
-  // monthly payment
-  const m = p * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1)
+  const rate = computeMonthlyPaymentForFixedInterestRateLoan({
+    amount: houseCosts.totalHouseCost * houseCosts.ltvPercentage / 100,
+    annualInterestRateInPercent: houseCosts.interestRate,
+    durationInMonths: houseCosts.durationInYears * 12
+  })
 
   const endPeriod = {
     year: houseCosts.startDate.getFullYear() + houseCosts.durationInYears,
@@ -51,8 +43,8 @@ function computeMonthlyCosts(houseCosts: HouseCosts): (period: Period) => Monthl
     const isPeriodInPayment = isPeriodAfterOrEqualStartDate && isPeriodBeforeOrEqualEndPeriod
 
     const downPayment = isFirstPayment ? houseCosts.totalHouseCost * (1 - houseCosts.ltvPercentage / 100) : 0
-    const monthlyPayment = isPeriodInPayment ? m : 0
-    
+    const monthlyPayment = isPeriodInPayment ? rate : 0
+
     return {
       period,
       totalExpenses: downPayment + monthlyPayment,
