@@ -4,4 +4,12 @@ export interface HouseState {
   interestRate: number;
   duration: number;
   startPaymentDateIsoString: string
+  furniture: {
+    kitchenCosts: number;
+    bathroomCosts: number;
+    livingRoomCosts: number;
+    bedroomCosts: number;
+    loanStartDateIsoString: string;
+    loanDurationInMonths: number;
+  }
 }
