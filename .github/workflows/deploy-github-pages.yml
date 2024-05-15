@@ -33,6 +33,15 @@ jobs:
         with:
           node-version: 18
 
+      # Using Yarn v4 causes issue in GitHub Actions
+      # See https://github.com/actions/setup-node/issues/899
+      - run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: yarn
+
       - name: Yarn install
         uses: borales/actions-yarn@v4
         with:
