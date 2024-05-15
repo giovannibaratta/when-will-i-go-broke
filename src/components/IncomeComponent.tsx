@@ -1,4 +1,14 @@
-import {Checkbox, FormControlLabel, FormGroup, InputLabel, Paper, Slider, styled} from "@mui/material"
+import {
+  Checkbox,
+  Container,
+  FormControlLabel,
+  FormGroup,
+  IconButton,
+  InputLabel,
+  Slider,
+  Tooltip,
+  Typography
+} from "@mui/material"
 import {CurrencyInputField} from "./shared/CurrencyInputField.tsx"
 import React, {ChangeEvent, useEffect, useState} from "react"
 import {Either} from "fp-ts/Either"
@@ -12,6 +22,7 @@ import {
   setTredicesima as setTredicesimaAction,
   setYoyGrowth as setYoyGrowthAction
 } from "../state/income/income-reducer.ts"
+import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined"
 
 interface IncomeComponentProps {
 }
@@ -109,8 +120,8 @@ export const IncomeComponent: React.FC<IncomeComponentProps> = (_: IncomeCompone
   })
 
   return (
-    <Paper elevation={1} sx={{marginBottom: "10px", marginTop: "10px"}}>
-      <Title>Income</Title>
+    <Container>
+      <Typography variant={"h4"} sx={{marginBottom: "20px"}}>Income</Typography>
       <CurrencyInputField label={"Starting money"}
                           validate={validateGreaterOrEqualToZero} defaultValue={startingMoney}
                           inputProps={{step: STARTING_MONEY_STEP_INCREMENT}} onValueChange={onStartingMoneyChange}
@@ -136,20 +147,25 @@ export const IncomeComponent: React.FC<IncomeComponentProps> = (_: IncomeCompone
       />
 
       <FormGroup>
-        <FormControlLabel control={<Checkbox defaultChecked onChange={onYoyCheckboxChange} />} label="YoY Growth" />
-        <FormControlLabel control={<Checkbox defaultChecked onChange={onTredicesimaChange} />} label="Tredicesima" />
-        <FormControlLabel control={<Checkbox onChange={onQuattordicesimaChange} />} label="Quattordicesima" />
+        <Container style={{display: "flex", justifyContent: "flex-start"}}><FormControlLabel
+          control={<Checkbox defaultChecked onChange={onYoyCheckboxChange} />} label="YoY Growth" /></Container>
+        <Container style={{display: "flex", justifyContent: "flex-start"}}><FormControlLabel
+          control={<Checkbox defaultChecked onChange={onTredicesimaChange} />}
+          label="Tredicesima" /><Tooltip title="Add an extra payslip in Decemeber">
+          <IconButton>
+            <HelpOutlineOutlinedIcon fontSize={"small"} />
+          </IconButton>
+        </Tooltip></Container>
+        <Container style={{display: "flex", justifyContent: "flex-start"}}><FormControlLabel
+          control={<Checkbox onChange={onQuattordicesimaChange} />} label="Quattordicesima" /><Tooltip
+          title="Add an extra payslip in June">
+          <IconButton>
+            <HelpOutlineOutlinedIcon fontSize={"small"} />
+          </IconButton>
+        </Tooltip></Container>
       </FormGroup>
-
-
-    </Paper>
+    </Container>
   )
 }
 
 const validateGreaterOrEqualToZero = (value: number): Either<string, true> => value >= 0 ? either.right(true) : either.left("Value must be greater or equal to 0")
-
-const Title = styled("div")(() => ({
-  padding: "10px",
-  fontWeight: "bold",
-  textAlign: "left"
-}))
