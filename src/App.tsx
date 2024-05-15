@@ -21,7 +21,7 @@ import {buildIncomeCalculator, GrowthOptions} from "./model/income.ts"
 import EuroTwoToneIcon from "@mui/icons-material/EuroTwoTone"
 import DirectionsCarFilledTwoToneIcon from "@mui/icons-material/DirectionsCarFilledTwoTone"
 import TrendingUpTwoToneIcon from "@mui/icons-material/TrendingUpTwoTone"
-import {BrowserRouter, Link, Route, Routes} from "react-router-dom"
+import {HashRouter, Link, Route, Routes} from "react-router-dom"
 import AnalyticsIcon from "@mui/icons-material/Analytics"
 import SettingsTwoToneIcon from "@mui/icons-material/SettingsTwoTone"
 import {SettingsComponent} from "./components/SettingsComponent.tsx"
@@ -111,7 +111,7 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Box sx={{display: "flex"}}>
         <Drawer
           sx={{
@@ -206,7 +206,7 @@ function App() {
           </Routes>
         </Container>
       </Box>
-    </BrowserRouter>
+    </HashRouter>
   )
 }
 

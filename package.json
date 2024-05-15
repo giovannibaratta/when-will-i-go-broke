@@ -1,5 +1,6 @@
 {
   "name": "living-costs",
+  "homepage": "https://giovannibaratta.github.io/when-will-i-go-broke",
   "packageManager": "yarn@4.2.1",
   "scripts": {
     "dev": "vite",
