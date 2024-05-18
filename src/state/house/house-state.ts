@@ -12,4 +12,19 @@ export interface HouseState {
     loanStartDateIsoString: string;
     loanDurationInMonths: number;
   }
+  agencyCosts: AgencyCosts;
+}
+
+export type AgencyCosts = (FixedAgencyCosts | VariableAgencyCosts) & {
+  beforeTax: boolean
+}
+
+interface FixedAgencyCosts {
+  type: "fixed"
+  parcel: number
+}
+
+interface VariableAgencyCosts {
+  type: "variable"
+  percentage: number
 }

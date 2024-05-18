@@ -1,5 +1,5 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit"
-import {HouseState} from "./house-state"
+import {AgencyCosts, HouseState} from "./house-state"
 import {getFirstDayOfNextMonthsFrom} from "../../utils/date.ts"
 
 const TOTAL_HOUSE_COST_INITIAL_VALUE = 200000
@@ -7,6 +7,7 @@ const LTV_PERCENTAGE_INITIAL_VALUE = 80
 const INTEREST_RATE_INITIAL_VALUE = 3
 const DURATION_INITIAL_VALUE = 20
 const FURNITURE_LOAN_DURATION_INITIAL_VALUE = 24
+const AGENCY_COSTS_VARIABLE_PERCENTAGE_INITIAL_VALUE = 3
 
 const initialState: HouseState = {
   totalHouseCost: TOTAL_HOUSE_COST_INITIAL_VALUE,
@@ -21,6 +22,11 @@ const initialState: HouseState = {
     bedroomCosts: 0,
     loanStartDateIsoString: getFirstDayOfNextMonthsFrom(new Date(), 1).toDateString(),
     loanDurationInMonths: FURNITURE_LOAN_DURATION_INITIAL_VALUE
+  },
+  agencyCosts: {
+    type: "variable",
+    beforeTax: true,
+    percentage: AGENCY_COSTS_VARIABLE_PERCENTAGE_INITIAL_VALUE
   }
 }
 
@@ -60,6 +66,9 @@ const houseSlice = createSlice({
     },
     setFurnitureLoanDurationInMonths: (state, action: PayloadAction<number>) => {
       state.furniture.loanDurationInMonths = action.payload
+    },
+    setAgencyCosts: (state, action: PayloadAction<AgencyCosts>) => {
+      state.agencyCosts = action.payload
     }
   }
 })
