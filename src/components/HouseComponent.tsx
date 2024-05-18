@@ -1,5 +1,18 @@
-import {Container, Paper, Stack, Typography} from "@mui/material"
-import React, {useEffect, useState} from "react"
+import {
+  Container,
+  FormControl,
+  FormControlLabel,
+  FormGroup,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  SelectChangeEvent,
+  Stack,
+  Switch,
+  Typography
+} from "@mui/material"
+import React, {ChangeEvent, useEffect, useState} from "react"
 import {CurrencyInputField} from "./shared/CurrencyInputField.tsx"
 import {NumericInputField} from "./shared/NumericInputField.tsx"
 import {PercentageInputField} from "./shared/PercentageInputField.tsx"
@@ -8,6 +21,9 @@ import {houseActions} from "../state/house/house-reducer.ts"
 import {getFirstDayOfNextMonthsFrom} from "../utils/date.ts"
 import dayjs, {Dayjs} from "dayjs"
 import {DatePicker} from "@mui/x-date-pickers"
+import {AgencyCosts} from "../state/house/house-state.ts"
+import {either} from "fp-ts"
+import {Either, isRight} from "fp-ts/Either"
 
 interface HouseComponentProps {
 }
@@ -16,7 +32,7 @@ const TOTAL_HOUSE_COST_STEP_INCREMENT = 10000
 const LTV_PERCENTAGE_STEP_INCREMENT = 5
 const INTEREST_RATE_STEP_INCREMENT = 0.1
 const FURNITURE_COST_STEP_INCREMENT = 200
-
+const AGENCY_COST_STEP_INCREMENT = 1000
 
 export const HouseComponent: React.FC<HouseComponentProps> = () => {
 
@@ -34,6 +50,11 @@ export const HouseComponent: React.FC<HouseComponentProps> = () => {
   const [bedroomCosts, setBedroomCosts] = useState(state.furniture.bedroomCosts)
   const [loanStartDate, setloanStartDate] = useState<Date>(new Date(state.furniture.loanStartDateIsoString))
   const [furnitureLoanDurationInMonths, setFurnitureLoanDurationInMonths] = useState(state.furniture.loanDurationInMonths)
+
+  const [agencyCostType, setAgencyCostType] = useState<AgencyCosts["type"]>(state.agencyCosts.type)
+  const [variableAgencyCostPercentage, setVariableAgencyCostPercentage] = useState(state.agencyCosts.type === "variable" ? state.agencyCosts.percentage : null)
+  const [fixedAgencyCost, setFixedAgencyCost] = useState(state.agencyCosts.type === "fixed" ? state.agencyCosts.parcel : null)
+  const [agencyCostsIncludeTax, setAgencyCostsIncludeTax] = useState(!state.agencyCosts.beforeTax)
 
   const handleTotalHouseCostChange = (value: number) => {
     setTotalHouseCost(value)
@@ -79,6 +100,26 @@ export const HouseComponent: React.FC<HouseComponentProps> = () => {
 
   const handleFurnitureLoanDurationChange = (value: number) => {
     setFurnitureLoanDurationInMonths(value)
+  }
+
+  const handleAgencyCostTypeChange = (event: SelectChangeEvent<AgencyCosts["type"]>) => {
+    const mappedValue = mapStringToActionCostType(event.target.value)
+
+    if (isRight(mappedValue)) {
+      setAgencyCostType(mappedValue.right)
+    }
+  }
+
+  const handleVariableAgencyCostPercentageChange = (value: number) => {
+    setVariableAgencyCostPercentage(value)
+  }
+
+  const handleFixedAgencyCostChange = (value: number) => {
+    setFixedAgencyCost(value)
+  }
+
+  const handleAgencyCostsIncludeTaxChange = (_event: ChangeEvent<HTMLInputElement>, checked: boolean) => {
+    setAgencyCostsIncludeTax(checked)
   }
 
   const dispatch = useAppDispatch()
@@ -128,6 +169,36 @@ export const HouseComponent: React.FC<HouseComponentProps> = () => {
   useEffect(() => {
     dispatch(houseActions.setFurnitureLoanDurationInMonths(furnitureLoanDurationInMonths))
   }, [dispatch, furnitureLoanDurationInMonths])
+
+
+  useEffect(() => {
+
+    let agencyCosts: AgencyCosts | null = null
+    const beforeTax = !agencyCostsIncludeTax
+
+    if (agencyCostType === "variable") {
+      if (variableAgencyCostPercentage) {
+        agencyCosts = {
+          type: "variable",
+          percentage: variableAgencyCostPercentage,
+          beforeTax
+        }
+      }
+    } else {
+      if (fixedAgencyCost) {
+        agencyCosts = {
+          type: "fixed",
+          parcel: fixedAgencyCost,
+          beforeTax
+        }
+      }
+    }
+
+    if (agencyCosts) {
+      dispatch(houseActions.setAgencyCosts(agencyCosts))
+    }
+
+  }, [dispatch, agencyCostType, variableAgencyCostPercentage, fixedAgencyCost, agencyCostsIncludeTax])
 
   return (
     <Stack sx={{width: "100%"}} spacing={4} alignItems="flex-start">
@@ -198,6 +269,55 @@ export const HouseComponent: React.FC<HouseComponentProps> = () => {
           />
         </Container>
       </Paper>
+      <Paper sx={{width: "100%"}}>
+        <Container sx={{m: "10px"}}>
+          <Typography variant="h4" sx={{marginBottom: "20px"}}>Agency Costs</Typography>
+          <FormControl>
+            <InputLabel id="agency-cost-type-label">Agency Cost Type</InputLabel>
+            <Select
+              labelId="agency-cost-type-label"
+              id="agency-cost-type"
+              value={agencyCostType}
+              label="Agency Cost Type"
+              onChange={handleAgencyCostTypeChange}
+            >
+              <MenuItem value="fixed">Fixed</MenuItem>
+              <MenuItem value="variable">Variable</MenuItem>
+            </Select>
+          </FormControl>
+          {agencyCostType === "variable" && (
+            <PercentageInputField
+              label="Variable parcel"
+              value={variableAgencyCostPercentage}
+              onValueChange={handleVariableAgencyCostPercentageChange}
+            />
+          )}
+          {agencyCostType === "fixed" && (
+            <CurrencyInputField
+              label="Agency Costs"
+              value={fixedAgencyCost}
+              onValueChange={handleFixedAgencyCostChange}
+              inputProps={{step: AGENCY_COST_STEP_INCREMENT}}
+            />
+          )}
+          <FormGroup>
+            <FormControlLabel control={<Switch defaultChecked onChange={handleAgencyCostsIncludeTaxChange}
+                                               value={agencyCostsIncludeTax} />}
+                              label="Include taxes (VAT, ...)" />
+          </FormGroup>
+        </Container>
+      </Paper>
     </Stack>
   )
+}
+
+function mapStringToActionCostType(value: string): Either<"unknown", AgencyCosts["type"]> {
+  switch (value) {
+    case "fixed":
+      return either.right(value)
+    case "variable":
+      return either.right(value)
+    default:
+      return either.left("unknown")
+  }
 }
