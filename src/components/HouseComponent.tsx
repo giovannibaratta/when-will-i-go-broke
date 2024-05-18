@@ -288,22 +288,23 @@ export const HouseComponent: React.FC<HouseComponentProps> = () => {
           {agencyCostType === "variable" && (
             <PercentageInputField
               label="Variable parcel"
-              value={variableAgencyCostPercentage}
+              value={variableAgencyCostPercentage ?? ""}
               onValueChange={handleVariableAgencyCostPercentageChange}
             />
           )}
           {agencyCostType === "fixed" && (
             <CurrencyInputField
               label="Agency Costs"
-              value={fixedAgencyCost}
+              value={fixedAgencyCost ?? ""}
               onValueChange={handleFixedAgencyCostChange}
               inputProps={{step: AGENCY_COST_STEP_INCREMENT}}
             />
           )}
           <FormGroup>
-            <FormControlLabel control={<Switch defaultChecked onChange={handleAgencyCostsIncludeTaxChange}
-                                               value={agencyCostsIncludeTax} />}
-                              label="Include taxes (VAT, ...)" />
+            <FormControlLabel
+              control={<Switch checked={agencyCostsIncludeTax} onChange={handleAgencyCostsIncludeTaxChange}
+                               value={agencyCostsIncludeTax} />}
+              label="Include taxes (VAT, ...)" />
           </FormGroup>
         </Container>
       </Paper>
