@@ -12,6 +12,10 @@ export function getFirstDayOfNextMonthsFrom(now: Date, numberOfMonths: number): 
   return new Date(newYear, newMonth, 1)
 }
 
+export function isSamePeriod(period1: Period, period2: Period): boolean {
+  return period1.year === period2.year && period1.month === period2.month
+}
+
 export function isPeriodBetweenStartAndEnd(period: Period, start: Period, end: Period, config ?: {
   includeStart: boolean,
   includeEnd: boolean
@@ -20,8 +24,8 @@ export function isPeriodBetweenStartAndEnd(period: Period, start: Period, end: P
   const includeStart = config?.includeStart ?? false
   const includeEnd = config?.includeEnd ?? false
 
-  const isSameAsStart = period.year === start.year && period.month === start.month
-  const isSameAsEnd = period.year === end.year && period.month === end.month
+  const isSameAsStart = isSamePeriod(period, start)
+  const isSameAsEnd = isSamePeriod(period, end)
   const isAfterStart = period.year > start.year || (period.year === start.year && period.month > start.month)
   const isBeforeEnd = period.year < end.year || (period.year === end.year && period.month < end.month)
 
