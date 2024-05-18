@@ -7,7 +7,7 @@ and other expensive things.
 
 The application is available at https://giovannibaratta.github.io/when-will-i-go-broke/.
 
-> [!INFO]
+> [!NOTE]
 > Available options are based on the italian market
 
 ## Status
