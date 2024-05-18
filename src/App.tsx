@@ -25,10 +25,11 @@ import {HashRouter, Link, Route, Routes} from "react-router-dom"
 import AnalyticsIcon from "@mui/icons-material/Analytics"
 import SettingsTwoToneIcon from "@mui/icons-material/SettingsTwoTone"
 import {SettingsComponent} from "./components/SettingsComponent.tsx"
-import {HouseComponent} from "./components/HouseComponent.tsx"
 import HouseIcon from "@mui/icons-material/House"
 import {buildHouseExpensesCalculator} from "./model/house.ts"
 import {buildFurnitureExpensesCalculator} from "./model/furniture.ts"
+import {buildHouseAgencyExpensesCalculator, HouseAgencyCosts} from "./model/house-agency.ts"
+import {HouseComponent} from "./components/HouseComponent.tsx"
 
 const ONE_YEAR_IN_MS = 1 * 1000 * 60 * 60 * 24 * 365
 
@@ -88,6 +89,29 @@ function App() {
     loanDurationInMonths: houseState.furniture.loanDurationInMonths
   })
 
+  const agencyCostsTax: HouseAgencyCosts["tax"] = houseState.agencyCosts.beforeTax ? {
+    type: "beforeTax",
+    vatPercentage: settingsState.vatInPercent
+  } : {
+    type: "afterTax"
+  }
+
+  const houseAgencyCosts: HouseAgencyCosts = houseState.agencyCosts.type === "variable" ? {
+    type: "variable",
+    percentage: houseState.agencyCosts.percentage,
+    tax: agencyCostsTax,
+    houseTransactionDate: new Date(houseState.startPaymentDateIsoString),
+    totalHouseCosts: houseState.totalHouseCost
+  } : {
+    type: "fixed",
+    parcel: houseState.agencyCosts.parcel,
+    tax: agencyCostsTax,
+    houseTransactionDate: new Date(houseState.startPaymentDateIsoString),
+    totalHouseCosts: houseState.totalHouseCost
+  }
+
+  const houseAgencyCalculator = buildHouseAgencyExpensesCalculator(houseAgencyCosts)
+
   while (simulationCurrentDate.getTime() < simulationEndingDate.getTime()) {
 
     const period = {
@@ -99,11 +123,12 @@ function App() {
     const incomeReport = incomeCalculator.computeMonthlyReport(period)
     const houseReport = houseCalculator.computeMonthlyReport(period)
     const furnitureReport = furnitureCalculator.computeMonthlyReport(period)
+    const houseAgencyReport = houseAgencyCalculator.computeMonthlyReport(period)
 
     const record: Report = {
       date: simulationCurrentDate,
       income: incomeReport.totalIncome,
-      totalMonthExpenses: carReport.totalExpenses + houseReport.totalExpenses + furnitureReport.totalExpenses
+      totalMonthExpenses: carReport.totalExpenses + houseReport.totalExpenses + furnitureReport.totalExpenses + houseAgencyReport.totalExpenses
     }
 
     records.push(record)
@@ -211,4 +236,3 @@ function App() {
 }
 
 export default App
-
