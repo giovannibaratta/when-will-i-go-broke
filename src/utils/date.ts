@@ -17,8 +17,8 @@ export function isSamePeriod(period1: Period, period2: Period): boolean {
 }
 
 export function isPeriodBetweenStartAndEnd(period: Period, start: Period, end: Period, config ?: {
-  includeStart: boolean,
-  includeEnd: boolean
+  includeStart?: boolean,
+  includeEnd?: boolean
 }): boolean {
 
   const includeStart = config?.includeStart ?? false
