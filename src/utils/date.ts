@@ -29,11 +29,9 @@ export function isPeriodBetweenStartAndEnd(period: Period, start: Period, end: P
   const isAfterStart = period.year > start.year || (period.year === start.year && period.month > start.month)
   const isBeforeEnd = period.year < end.year || (period.year === end.year && period.month < end.month)
 
-  const isBetweenStartAndEnd = (isAfterStart && isBeforeEnd) ||
+  return (isAfterStart && isBeforeEnd) ||
     (isSameAsStart && includeStart) ||
     (isSameAsEnd && includeEnd)
-
-  return isBetweenStartAndEnd
 }
 
 export const dateToPeriod = (date: Date): Period => {
