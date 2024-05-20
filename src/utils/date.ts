@@ -41,9 +41,14 @@ export const dateToPeriod = (date: Date): Period => {
   }
 }
 
-export const addMonthsToPeriod = (period: Period, months: number): Period => {
-  const newYear = period.year + Math.floor(months / 12)
-  const newMonth = period.month + months % 12
+export const addMonthsToPeriod = (period: Period, monthsToAdd: number): Period => {
+  if (monthsToAdd < 0) throw new RangeError("Months must be positive or equal to 0")
+
+  const currentSlot = period.year * 12 + period.month
+  const newSlot = currentSlot + monthsToAdd
+
+  const newYear = Math.floor(newSlot / 12)
+  const newMonth = newSlot % 12
 
   return {
     year: newYear,

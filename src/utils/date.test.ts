@@ -1,5 +1,5 @@
-import {isSamePeriod} from "./date.ts"
-import {Period} from "../model/monthly-report.ts"
+import {addMonthsToPeriod, isSamePeriod} from "./date.ts"
+import {Month, Period} from "../model/monthly-report.ts"
 import {isPeriodBetweenStartAndEnd} from "./date"
 
 describe("isSamePeriod", () => {
@@ -153,5 +153,55 @@ describe("isPeriodBetweenStartAndEnd", () => {
 
     // Expect
     expect(result).toBe(false)
+  })
+})
+
+// addMonthsToPeriod.test.ts
+
+describe("addMonthsToPeriod", () => {
+  it("should add a year if the starting month is December", () => {
+    // Given
+    const period = {year: 2023, month: Month.December}
+
+    // When
+    const result = addMonthsToPeriod(period, 1)
+
+    // Expect
+    expect(result).toEqual({year: 2024, month: Month.January})
+  })
+
+  it("should handle adding months across years", () => {
+    // Given
+    const period = {year: 2023, month: Month.November}
+    const monthsToAdd = 14
+
+    // When
+    const result = addMonthsToPeriod(period, monthsToAdd)
+
+    // Expect
+    expect(result).toEqual({year: 2025, month: Month.January})
+  })
+
+  it("should handle adding 0 months", () => {
+    // Given
+    const period = {year: 2023, month: Month.November}
+
+    // When
+    const result = addMonthsToPeriod(period, 0)
+
+    // Expect
+    expect(result).toEqual({year: 2023, month: Month.November})
+  })
+
+  it("should thrown an error if monthsToAdd is negative", () => {
+    // Given
+    const period = {year: 2023, month: Month.November}
+    const monthsToAdd = -1
+
+    // When
+    const result = () => addMonthsToPeriod(period, monthsToAdd)
+
+    // Expect
+    expect(result).toThrow("Months must be positive or equal to 0")
   })
 })
