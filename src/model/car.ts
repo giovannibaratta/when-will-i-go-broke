@@ -1,5 +1,5 @@
 import {MonthlyReport, Period} from "./monthly-report.ts"
-import {getFirstDayOfNextMonthsFrom} from "../utils/date.ts"
+import {dateToPeriod, getFirstDayOfNextMonthsFrom, isPeriodBetweenStartAndEnd, isSamePeriod} from "../utils/date.ts"
 
 export type CarExpenses = CarMonthlyRateOnly | CarUpfrontOnly | CarMonthlyRateAndUpfront
 
@@ -107,13 +107,15 @@ function monthlyRateCalculator(config: CarMonthlyRateOnly): CarCalculator {
 }
 
 function isPeriodIncludedInInterval(period: Period, interval: {start: Date, durationInMonths: number}): boolean {
-  const startInterval = interval.start
-  const endInterval = getFirstDayOfNextMonthsFrom(startInterval, interval.durationInMonths)
-  const isPeriodEqualOrAfterStart = period.year > startInterval.getFullYear() || (startInterval.getFullYear() == period.year && period.month >= startInterval.getMonth())
-  const isPeriodBeforeEnd = period.year < endInterval.getFullYear() || (endInterval.getFullYear() == period.year && period.month < endInterval.getMonth())
-  return isPeriodEqualOrAfterStart && isPeriodBeforeEnd
+  const startPeriod = dateToPeriod(interval.start)
+  const endPeriod = dateToPeriod(getFirstDayOfNextMonthsFrom(interval.start, interval.durationInMonths))
+
+  return isPeriodBetweenStartAndEnd(period, startPeriod, endPeriod, {
+    includeStart: true,
+    includeEnd: false
+  })
 }
 
 function doesPeriodAndDateMatch(date: Date, period: Period): boolean {
-  return date.getFullYear() === period.year && date.getMonth() === period.month
+  return isSamePeriod(dateToPeriod(date), period)
 }
