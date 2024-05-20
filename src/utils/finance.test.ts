@@ -41,7 +41,7 @@ describe("computeMonthlyPaymentForFixedInterestRateLoan", () => {
 
     // Expect
     expect(() => computeMonthlyPaymentForFixedInterestRateLoan(loan)).toThrow(
-      "Amount must be positive"
+      "Amount must be positive or equal to zero"
     )
   })
 
@@ -69,7 +69,7 @@ describe("computeMonthlyPaymentForFixedInterestRateLoan", () => {
 
     // Expect
     expect(() => computeMonthlyPaymentForFixedInterestRateLoan(loan)).toThrow(
-      "Duration must be positive"
+      "Duration must be positive or equal to zero"
     )
   })
 })

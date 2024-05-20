@@ -9,9 +9,9 @@ export const computeMonthlyPaymentForFixedInterestRateLoan = (loan: {
 }): number => {
   const {amount, annualInterestRateInPercent, durationInMonths} = loan
 
-  if (amount <= 0) throw new RangeError("Amount must be positive")
+  if (amount < 0) throw new RangeError("Amount must be positive or equal to zero")
   if (annualInterestRateInPercent < 0) throw new RangeError("Annual interest rate must be positive or equal to zero")
-  if (durationInMonths <= 0) throw new RangeError("Duration must be positive")
+  if (durationInMonths < 0) throw new RangeError("Duration must be positive or equal to zero")
 
   // Handle special case of interest = 0 to avoid a NaN value in the formula below
   if (annualInterestRateInPercent === 0) {
