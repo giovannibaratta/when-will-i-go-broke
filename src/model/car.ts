@@ -3,20 +3,20 @@ import {dateToPeriod, getFirstDayOfNextMonthsFrom, isPeriodBetweenStartAndEnd, i
 
 export type CarExpenses = CarMonthlyRateOnly | CarUpfrontOnly | CarMonthlyRateAndUpfront
 
-interface CarMonthlyRateOnly {
+export interface CarMonthlyRateOnly {
   type: "CarMonthlyRateOnly"
   monthlyRate: number
   duration: number
   startDate: Date
 }
 
-interface CarUpfrontOnly {
+export interface CarUpfrontOnly {
   type: "CarUpfrontOnly"
   date: Date
   upfront: number
 }
 
-interface CarMonthlyRateAndUpfront {
+export interface CarMonthlyRateAndUpfront {
   type: "CarMonthlyRateAndUpfront"
   monthlyRate: number
   duration: number
