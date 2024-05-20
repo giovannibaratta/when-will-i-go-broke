@@ -1,7 +1,8 @@
 import {Period} from "../model/monthly-report.ts"
 
 export function getFirstDayOfNextMonthsFrom(now: Date, numberOfMonths: number): Date {
-  console.assert(numberOfMonths > 0)
+  if (numberOfMonths < 0) throw new RangeError("Months must be positive or equal to 0")
+
   const currentMonth = now.getMonth()
   const targetMonth = currentMonth + numberOfMonths
 

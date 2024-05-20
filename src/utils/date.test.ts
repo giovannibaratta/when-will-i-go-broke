@@ -1,4 +1,4 @@
-import {addMonthsToPeriod, isSamePeriod} from "./date.ts"
+import {addMonthsToPeriod, getFirstDayOfNextMonthsFrom, isSamePeriod} from "./date.ts"
 import {Month, Period} from "../model/monthly-report.ts"
 import {isPeriodBetweenStartAndEnd} from "./date"
 
@@ -200,6 +200,56 @@ describe("addMonthsToPeriod", () => {
 
     // When
     const result = () => addMonthsToPeriod(period, monthsToAdd)
+
+    // Expect
+    expect(result).toThrow("Months must be positive or equal to 0")
+  })
+})
+
+describe("getFirstDayOfNextMonthsFrom", () => {
+  it("should return the first day of the next month when now is in the middle of the month", () => {
+    // Given
+    const now = new Date(2023, 10, 20)
+    const numberOfMonths = 1
+
+    // When
+    const result = getFirstDayOfNextMonthsFrom(now, numberOfMonths)
+
+    // Expect
+    expect(result).toEqual(new Date(2023, 11, 1))
+  })
+
+  it("should return the first day of the next month when now is the first day of a month", () => {
+    // Given
+    const now = new Date(2023, 10, 1)
+    const numberOfMonths = 1
+
+    // When
+    const result = getFirstDayOfNextMonthsFrom(now, numberOfMonths)
+
+    // Expect
+    expect(result).toEqual(new Date(2023, 11, 1))
+  })
+
+  it("should add a year if the numberOfMonths is greater than the remaining days of the year", () => {
+    // Given
+    const now = new Date(2023, 10, 20)
+    const numberOfMonths = 15
+
+    // When
+    const result = getFirstDayOfNextMonthsFrom(now, numberOfMonths)
+
+    // Expect
+    expect(result).toEqual(new Date(2025, 1, 1))
+  })
+
+  it("should throw an error when numberOfMonths is negative", () => {
+    // Given
+    const now = new Date(2023, 10, 20)
+    const numberOfMonths = -1
+
+    // When
+    const result = () => getFirstDayOfNextMonthsFrom(now, numberOfMonths)
 
     // Expect
     expect(result).toThrow("Months must be positive or equal to 0")
