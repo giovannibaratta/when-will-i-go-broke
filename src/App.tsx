@@ -12,6 +12,7 @@ import {
   ListItemIcon,
   ListItemText
 } from "@mui/material"
+import InfoTwoToneIcon from "@mui/icons-material/InfoTwoTone"
 import {useAppSelector} from "./state/store.ts"
 import {getFirstDayOfNextMonthsFrom} from "./utils/date.ts"
 import {buildCarExpensesCalculator} from "./model/car.ts"
@@ -30,6 +31,7 @@ import {buildHouseExpensesCalculator} from "./model/house.ts"
 import {buildFurnitureExpensesCalculator} from "./model/furniture.ts"
 import {buildHouseAgencyExpensesCalculator, HouseAgencyCosts} from "./model/house-agency.ts"
 import {HouseComponent} from "./components/HouseComponent.tsx"
+import {Info} from "./components/InfoComponent.tsx"
 
 const ONE_YEAR_IN_MS = 1 * 1000 * 60 * 60 * 24 * 365
 
@@ -151,8 +153,19 @@ function App() {
           anchor="left"
         >
           <List>
-            <ListItem key={"Summary"} disablePadding>
+            <ListItem key={"Info"} disablePadding>
               <Link to="/">
+                <ListItemButton>
+                  <ListItemIcon>
+                    <InfoTwoToneIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={"Info"} />
+                </ListItemButton>
+              </Link>
+            </ListItem>
+            <Divider />
+            <ListItem key={"Summary"} disablePadding>
+              <Link to="/summary">
                 <ListItemButton>
                   <ListItemIcon>
                     <AnalyticsIcon />
@@ -220,9 +233,10 @@ function App() {
         <Container maxWidth="xl">
 
           <Routes>
-            <Route path="/" element={<SummaryComponent simulationStartDate={simulationStartDate}
-                                                       simulationEndingDate={simulationEndingDate}
-                                                       records={records} />} />
+            <Route path="/" element={<Info />} />
+            <Route path="/summary" element={<SummaryComponent simulationStartDate={simulationStartDate}
+                                                              simulationEndingDate={simulationEndingDate}
+                                                              records={records} />} />
             <Route path="/projection" element={<CostsProjectionComponent data={records} />} />
             <Route path="/income" element={<IncomeComponent />} />
             <Route path="/car" element={<CarComponent disabled={false} />} />
