@@ -32,6 +32,8 @@ import {buildFurnitureExpensesCalculator} from "./model/furniture.ts"
 import {buildHouseAgencyExpensesCalculator, HouseAgencyCosts} from "./model/house-agency.ts"
 import {HouseComponent} from "./components/HouseComponent.tsx"
 import {Info} from "./components/InfoComponent.tsx"
+import {MiscellaneousCostsComponent} from "./components/MiscellaneousComponent.tsx"
+import MiscellaneousServicesTwoToneIcon from "@mui/icons-material/MiscellaneousServicesTwoTone"
 
 const ONE_YEAR_IN_MS = 1 * 1000 * 60 * 60 * 24 * 365
 
@@ -215,6 +217,16 @@ function App() {
                 </ListItemButton>
               </Link>
             </ListItem>
+            <ListItem key={"Miscellaneous"} disablePadding>
+              <Link to="/miscellaneous">
+                <ListItemButton>
+                  <ListItemIcon>
+                    <MiscellaneousServicesTwoToneIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={"Miscellaneous"} />
+                </ListItemButton>
+              </Link>
+            </ListItem>
             <Divider />
             <ListItem key={"Settings"} disablePadding>
               <Link to="/settings">
@@ -242,6 +254,7 @@ function App() {
             <Route path="/car" element={<CarComponent disabled={false} />} />
             <Route path="/house" element={<HouseComponent />} />
             <Route path="/settings" element={<SettingsComponent />} />
+            <Route path="/miscellaneous" element={<MiscellaneousCostsComponent />} />"
           </Routes>
         </Container>
       </Box>
