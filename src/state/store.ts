@@ -6,6 +6,10 @@ import settingsReducer from "./settings/settings-reducer.ts"
 import storage from "redux-persist/lib/storage"
 import {createMigrate, persistReducer, persistStore} from "redux-persist"
 import houseReducer from "./house/house-reducer.ts"
+import miscellaneousReducer, {
+  CANONE_RAI_DEFAULT_VALUE,
+  TARI_DEFAULT_VALUE
+} from "./miscellaneous/miscellaneous-reducer.ts"
 
 const migrations = {
   // @ts-expect-error The old state is not typed and redux-persist does
@@ -14,13 +18,24 @@ const migrations = {
     return {
       ...state
     }
+  },
+  // @ts-expect-error The old state is not typed and redux-persist does
+  // not expose the types
+  1: (state) => {
+    return {
+      ...state,
+      miscellaneous: {
+        canoneRai: CANONE_RAI_DEFAULT_VALUE,
+        tari: TARI_DEFAULT_VALUE
+      }
+    }
   }
 }
 
 const persistConfig = {
   key: "when-i-will-go-broke-primary",
   storage,
-  version: 0,
+  version: 1,
   migrate: createMigrate(migrations)
 }
 
@@ -28,7 +43,8 @@ const reducers = combineReducers({
   car: carReducer,
   income: incomeReducer,
   house: houseReducer,
-  settings: settingsReducer
+  settings: settingsReducer,
+  miscellaneous: miscellaneousReducer
 })
 
 const persistedReducer = persistReducer(persistConfig, reducers)
