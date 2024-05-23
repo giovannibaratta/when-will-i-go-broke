@@ -1,6 +1,33 @@
-import {Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@mui/material"
+import {Paper, SxProps, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Theme} from "@mui/material"
 import React from "react"
 import {formatNumberToEuro} from "../utils/print.ts"
+import {green, orange, red} from "@mui/material/colors"
+
+const DELTA_MEDIUM_THRESHOLD = 0
+const DELTA_CRITICAL_THRESHOLD = -500
+const BALANCE_CRITICAL_THRESHOLD = 5000
+const BALANCE_MEDIUM_THRESHOLD = 15000
+const BALANCE_SAFE_THRESHOLD = Number.MAX_VALUE
+
+const criticalAttentionStyle: SxProps<Theme> = {
+  color: red["900"],
+  fontWeight: "bolder"
+}
+
+const mediumAttentionStyle: SxProps<Theme> = {
+  color: orange["700"],
+  fontWeight: "bolder"
+}
+
+const balanceSafeThresholdStyle: SxProps<Theme> = {
+  color: green["700"]
+}
+
+const balanceThresholds: [number, SxProps<Theme>][] = [
+  [BALANCE_CRITICAL_THRESHOLD, criticalAttentionStyle],
+  [BALANCE_MEDIUM_THRESHOLD, mediumAttentionStyle],
+  [BALANCE_SAFE_THRESHOLD, balanceSafeThresholdStyle]
+]
 
 interface CostProjectionComponentProps {
   data: ReadonlyArray<Report>
@@ -54,14 +81,35 @@ export const CostsProjectionComponent: React.FC<CostProjectionComponentProps> = 
               <TableCell component="th" scope="row">
                 {row.date.toDateString()}
               </TableCell>
-              <TableCell align="right">{formatNumberToEuro(row.balance)}</TableCell>
+              <TableCell sx={computeBalanceStyle(row.balance)}
+                         align="right">{formatNumberToEuro(row.balance)}</TableCell>
               <TableCell align="right">{formatNumberToEuro(row.income)}</TableCell>
               <TableCell align="right">{formatNumberToEuro(row.totalMonthExpenses)}</TableCell>
-              <TableCell align="right">{formatNumberToEuro(row.delta)}</TableCell>
+              <TableCell sx={computeDeltaStyle(row.delta)} align="right">{formatNumberToEuro(row.delta)}</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
     </TableContainer>
   )
+}
+
+const computeBalanceStyle = (balance: number) => {
+  for (const threshold of balanceThresholds) {
+    if (balance <= threshold[0]) {
+      return threshold[1]
+    }
+  }
+}
+
+const computeDeltaStyle = (delta: number) => {
+  if (delta < DELTA_CRITICAL_THRESHOLD) {
+    return criticalAttentionStyle
+  }
+
+  if (delta < DELTA_MEDIUM_THRESHOLD) {
+    return mediumAttentionStyle
+  }
+
+  return {}
 }
