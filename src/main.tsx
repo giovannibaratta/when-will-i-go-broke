@@ -7,13 +7,17 @@ import store, {persistor} from "./state/store.ts"
 import {LocalizationProvider} from "@mui/x-date-pickers"
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs"
 import {PersistGate} from "redux-persist/integration/react"
+import {ThemeProvider} from "@mui/material"
+import {theme} from "./theme.ts"
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <App />
+          <ThemeProvider theme={theme}>
+            <App />
+          </ThemeProvider>
         </LocalizationProvider>
       </PersistGate>
 
