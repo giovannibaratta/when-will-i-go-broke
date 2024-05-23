@@ -34,6 +34,7 @@ import {HouseComponent} from "./components/HouseComponent.tsx"
 import {Info} from "./components/InfoComponent.tsx"
 import {MiscellaneousCostsComponent} from "./components/MiscellaneousComponent.tsx"
 import MiscellaneousServicesTwoToneIcon from "@mui/icons-material/MiscellaneousServicesTwoTone"
+import {buildMiscellaneousExpensesCalculator} from "./model/miscellaneous.ts"
 
 const ONE_YEAR_IN_MS = 1 * 1000 * 60 * 60 * 24 * 365
 
@@ -44,6 +45,7 @@ function App() {
   const carState = useAppSelector(state => state.car)
   const incomeState = useAppSelector(state => state.income)
   const houseState = useAppSelector(state => state.house)
+  const miscellaneousState = useAppSelector(state => state.miscellaneous)
 
   const records: Report[] = []
 
@@ -115,6 +117,10 @@ function App() {
   }
 
   const houseAgencyCalculator = buildHouseAgencyExpensesCalculator(houseAgencyCosts)
+  const miscellaneousCostsCalculator = buildMiscellaneousExpensesCalculator({
+    tari: miscellaneousState.tari,
+    canoneRai: miscellaneousState.canoneRai
+  })
 
   while (simulationCurrentDate.getTime() < simulationEndingDate.getTime()) {
 
@@ -128,11 +134,17 @@ function App() {
     const houseReport = houseCalculator.computeMonthlyReport(period)
     const furnitureReport = furnitureCalculator.computeMonthlyReport(period)
     const houseAgencyReport = houseAgencyCalculator.computeMonthlyReport(period)
+    const miscellaneuousCostsReport = miscellaneousCostsCalculator.computeMonthlyReport(period)
 
     const record: Report = {
       date: simulationCurrentDate,
       income: incomeReport.totalIncome,
-      totalMonthExpenses: carReport.totalExpenses + houseReport.totalExpenses + furnitureReport.totalExpenses + houseAgencyReport.totalExpenses
+      totalMonthExpenses: carReport.totalExpenses +
+        incomeReport.totalExpenses +
+        houseReport.totalExpenses +
+        furnitureReport.totalExpenses +
+        houseAgencyReport.totalExpenses +
+        miscellaneuousCostsReport.totalExpenses
     }
 
     records.push(record)
