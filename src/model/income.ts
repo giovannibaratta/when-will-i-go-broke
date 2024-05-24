@@ -1,9 +1,9 @@
-import {Month, MonthlyReport, Period} from "./monthly-report.ts"
+import {Month, Report, Period, ReportGenerator} from "./monthly-report.ts"
 
 interface Income {
-  readonly monthlyNetRate: number,
-  readonly tredicesima: boolean,
-  readonly quattordicesima: boolean,
+  readonly monthlyNetRate: number
+  readonly tredicesima: boolean
+  readonly quattordicesima: boolean
 
   readonly growth: GrowthOptions
 }
@@ -15,17 +15,16 @@ interface Disabled {
 }
 
 interface YearlyGrowth {
-  readonly type: "yearly",
+  readonly type: "yearly"
   readonly annualPercentageGrowth: number
   readonly startDate: Date
 }
 
-export type IncomeCalculator = Income & {
-  readonly computeMonthlyReport: (period: Period) => MonthlyReport
-}
+export type IncomeCalculator = Income & ReportGenerator
 
-export function buildIncomeCalculator(config: Partial<Income>): IncomeCalculator {
-
+export function buildIncomeCalculator(
+  config: Partial<Income>
+): IncomeCalculator {
   const defaultConfig: Income = {
     monthlyNetRate: 0,
     tredicesima: false,
@@ -42,17 +41,21 @@ export function buildIncomeCalculator(config: Partial<Income>): IncomeCalculator
 
   return {
     ...mergedConfig,
-    computeMonthlyReport: calculateIncomeFor(mergedConfig)
+    generateReports: calculateIncomeFor(mergedConfig)
   }
 }
 
-const computeBasePayMultiplier = (period: Period, growth: GrowthOptions): number => {
+const computeBasePayMultiplier = (
+  period: Period,
+  growth: GrowthOptions
+): number => {
   if (growth.type == "yearly") {
     const startYear = growth.startDate.getFullYear()
     const startMonth = growth.startDate.getMonth()
 
     const annualGrowthRate = growth.annualPercentageGrowth / 100
-    const monthsSinceStart = (period.year - startYear) * 12 + (period.month - startMonth)
+    const monthsSinceStart =
+      (period.year - startYear) * 12 + (period.month - startMonth)
 
     return Math.pow(1 + annualGrowthRate, monthsSinceStart / 12)
   }
@@ -62,28 +65,35 @@ const computeBasePayMultiplier = (period: Period, growth: GrowthOptions): number
 }
 
 const calculateIncomeFor = (config: Income) => {
-  return function(period: Period): MonthlyReport {
+  return function (period: Period): ReadonlyArray<Report> {
     const basePayMultiplier = computeBasePayMultiplier(period, config.growth)
     const basePay = config.monthlyNetRate * basePayMultiplier
 
-    let additionalPay = 0
+    const reports: Report[] = []
+
+    const basePayReport: Report = {
+      type: "Income",
+      amount: basePay,
+      category: INCOME_CATEGORY,
+      component: SALARY_COMPONENT,
+      period
+    }
+
+    // Base pay
+    reports.push(basePayReport)
 
     if (period.month == Month.December && config.tredicesima) {
-      additionalPay += basePay
+      reports.push(basePayReport)
     }
 
     if (period.month == Month.July && config.quattordicesima) {
-      additionalPay += basePay
+      reports.push(basePayReport)
     }
 
-    return {
-      totalIncome: basePay + additionalPay,
-      totalExpenses: 0,
-      detailedExpenses: {},
-      period,
-      component: INCOME_COMPONENT
-    }
+    return reports
   }
 }
 
-const INCOME_COMPONENT = "Income"
+export const INCOME_CATEGORY = "Income"
+export const SALARY_COMPONENT = "Salary"
+export type IncomeComponents = typeof SALARY_COMPONENT

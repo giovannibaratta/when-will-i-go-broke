@@ -1,61 +1,97 @@
 // Interface to represent house costs
-import {MonthlyReport, Period} from "./monthly-report.ts"
+import {
+  Report,
+  Period,
+  ReportGenerator,
+  ReportsGenerator
+} from "./monthly-report.ts"
 import {computeMonthlyPaymentForFixedInterestRateLoan} from "../utils/finance.ts"
+import {
+  dateToPeriod,
+  isPeriodBetweenStartAndEnd,
+  isSamePeriod
+} from "../utils/date.ts"
 
 interface HouseCosts {
-  totalHouseCost: number;
-  ltvPercentage: number;
-  interestRate: number;
-  durationInYears: number;
+  totalHouseCost: number
+  ltvPercentage: number
+  interestRate: number
+  durationInYears: number
   startDate: Date
 }
 
-export type HouseCostsCalculator = HouseCosts & {
-  computeMonthlyReport: (period: Period) => MonthlyReport
-}
+export type HouseCostsCalculator = HouseCosts & ReportGenerator
 
-export function buildHouseExpensesCalculator(config: HouseCosts): HouseCostsCalculator {
+export function buildHouseExpensesCalculator(
+  config: HouseCosts
+): HouseCostsCalculator {
   return {
     ...config,
-    computeMonthlyReport: computeMonthlyCosts(config)
+    generateReports: generateReportsBuilder(config)
   }
 }
 
-function computeMonthlyCosts(houseCosts: HouseCosts): (period: Period) => MonthlyReport {
-
+function generateReportsBuilder(houseCosts: HouseCosts): ReportsGenerator {
   const rate = computeMonthlyPaymentForFixedInterestRateLoan({
-    amount: houseCosts.totalHouseCost * houseCosts.ltvPercentage / 100,
+    amount: (houseCosts.totalHouseCost * houseCosts.ltvPercentage) / 100,
     annualInterestRateInPercent: houseCosts.interestRate,
     durationInMonths: houseCosts.durationInYears * 12
   })
 
+  const startPeriod = dateToPeriod(houseCosts.startDate)
+
   const endPeriod = {
     year: houseCosts.startDate.getFullYear() + houseCosts.durationInYears,
-    month: houseCosts.startDate.getMonth() - 1
+    month: houseCosts.startDate.getMonth()
   }
 
   return (period: Period) => {
-    const isFirstPayment = period.year === houseCosts.startDate.getFullYear() &&
-      period.month === houseCosts.startDate.getMonth()
+    const isFirstPayment = isSamePeriod(period, startPeriod)
 
-    const isPeriodAfterOrEqualStartDate = period.year > houseCosts.startDate.getFullYear() || period.year === houseCosts.startDate.getFullYear() && period.month >= houseCosts.startDate.getMonth()
-    const isPeriodBeforeOrEqualEndPeriod = period.year < endPeriod.year || (period.year === endPeriod.year && period.month <= endPeriod.month)
-    const isPeriodInPayment = isPeriodAfterOrEqualStartDate && isPeriodBeforeOrEqualEndPeriod
-
-    const downPayment = isFirstPayment ? houseCosts.totalHouseCost * (1 - houseCosts.ltvPercentage / 100) : 0
-    const monthlyPayment = isPeriodInPayment ? rate : 0
-
-    return {
+    const isMortgageStillActive = isPeriodBetweenStartAndEnd(
       period,
-      totalExpenses: downPayment + monthlyPayment,
-      component: HOUSE_COMPONENT,
-      totalIncome: 0,
-      detailedExpenses: {
-        ...(downPayment > 0 ? {downPayment} : {}),
-        ...(monthlyPayment > 0 ? {monthlyPayment} : {})
+      startPeriod,
+      endPeriod,
+      {
+        includeStart: true,
+        includeEnd: false
       }
+    )
+
+    const reports: Report[] = []
+
+    if (isFirstPayment) {
+      const downPayment =
+        houseCosts.totalHouseCost * (1 - houseCosts.ltvPercentage / 100)
+
+      reports.push({
+        period,
+        component: DOWN_PAYMENT_COMPONENT,
+        category: HOUSE_CATEGORY,
+        amount: downPayment,
+        type: "Expense"
+      })
     }
+
+    if (isMortgageStillActive) {
+      reports.push({
+        period,
+        component: MONTHLY_PAYMENT_COMPONENT,
+        category: HOUSE_CATEGORY,
+        amount: rate,
+        type: "Expense"
+      })
+    }
+
+    return reports
   }
 }
 
-const HOUSE_COMPONENT = "House"
+export const HOUSE_CATEGORY = "House"
+
+export const DOWN_PAYMENT_COMPONENT = "DownPayment"
+export const MONTHLY_PAYMENT_COMPONENT = "MonthlyPayment"
+
+export type HouseComponents =
+  | typeof DOWN_PAYMENT_COMPONENT
+  | typeof MONTHLY_PAYMENT_COMPONENT

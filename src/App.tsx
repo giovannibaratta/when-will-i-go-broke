@@ -1,6 +1,6 @@
 import "./App.css"
 import {CarComponent} from "./components/CarComponent.tsx"
-import {CostsProjectionComponent, Report} from "./components/CostsProjectionComponent.tsx"
+import {CostsProjectionComponent} from "./components/CostsProjectionComponent.tsx"
 import {
   Box,
   Container,
@@ -35,6 +35,7 @@ import {Info} from "./components/InfoComponent.tsx"
 import {MiscellaneousCostsComponent} from "./components/MiscellaneousComponent.tsx"
 import MiscellaneousServicesTwoToneIcon from "@mui/icons-material/MiscellaneousServicesTwoTone"
 import {buildMiscellaneousExpensesCalculator} from "./model/miscellaneous.ts"
+import { Report } from "./model/monthly-report.ts"
 
 const ONE_YEAR_IN_MS = 1 * 1000 * 60 * 60 * 24 * 365
 
@@ -46,9 +47,6 @@ function App() {
   const incomeState = useAppSelector(state => state.income)
   const houseState = useAppSelector(state => state.house)
   const miscellaneousState = useAppSelector(state => state.miscellaneous)
-
-  const records: Report[] = []
-
   const now = new Date(Date.now())
   const simulationStartDate = getFirstDayOfNextMonthsFrom(now, 1)
   let simulationCurrentDate = simulationStartDate
@@ -122,6 +120,8 @@ function App() {
     canoneRai: miscellaneousState.canoneRai
   })
 
+ const reports : Report[] = []
+
   while (simulationCurrentDate.getTime() < simulationEndingDate.getTime()) {
 
     const period = {
@@ -129,25 +129,16 @@ function App() {
       year: simulationCurrentDate.getFullYear()
     }
 
-    const carReport = carExpensesCalculator.computeMonthlyReport(period)
-    const incomeReport = incomeCalculator.computeMonthlyReport(period)
-    const houseReport = houseCalculator.computeMonthlyReport(period)
-    const furnitureReport = furnitureCalculator.computeMonthlyReport(period)
-    const houseAgencyReport = houseAgencyCalculator.computeMonthlyReport(period)
-    const miscellaneuousCostsReport = miscellaneousCostsCalculator.computeMonthlyReport(period)
+    const periodReports = [
+      ...carExpensesCalculator.generateReports(period),
+      ...incomeCalculator.generateReports(period),
+      ...houseCalculator.generateReports(period),
+      ...furnitureCalculator.generateReports(period),
+      ...houseAgencyCalculator.generateReports(period),
+      ...miscellaneousCostsCalculator.generateReports(period)
+    ]
 
-    const record: Report = {
-      date: simulationCurrentDate,
-      income: incomeReport.totalIncome,
-      totalMonthExpenses: carReport.totalExpenses +
-        incomeReport.totalExpenses +
-        houseReport.totalExpenses +
-        furnitureReport.totalExpenses +
-        houseAgencyReport.totalExpenses +
-        miscellaneuousCostsReport.totalExpenses
-    }
-
-    records.push(record)
+    reports.push(...periodReports)
     simulationCurrentDate = getFirstDayOfNextMonthsFrom(simulationCurrentDate, settingsState.resolutionInMonths)
   }
 
@@ -260,8 +251,8 @@ function App() {
             <Route path="/" element={<Info />} />
             <Route path="/summary" element={<SummaryComponent simulationStartDate={simulationStartDate}
                                                               simulationEndingDate={simulationEndingDate}
-                                                              records={records} />} />
-            <Route path="/projection" element={<CostsProjectionComponent data={records} />} />
+                                                              records={reports} />} />
+            <Route path="/projection" element={<CostsProjectionComponent data={reports}/>} />
             <Route path="/income" element={<IncomeComponent />} />
             <Route path="/car" element={<CarComponent disabled={false} />} />
             <Route path="/house" element={<HouseComponent />} />

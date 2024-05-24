@@ -1,7 +1,7 @@
 import {Paper} from "@mui/material"
-import {Report} from "./CostsProjectionComponent.tsx"
 import React from "react"
 import {formatNumberToEuro} from "../utils/print.ts"
+import { Report } from "../model/monthly-report.ts"
 
 export interface SummaryComponentProps {
   simulationStartDate: Date,
@@ -9,17 +9,23 @@ export interface SummaryComponentProps {
   records: ReadonlyArray<Report>
 }
 
+interface Summary {
+  readonly totalExpenses: number,
+  readonly totalIncome: number
+}
+
 export const SummaryComponent: React.FC<SummaryComponentProps> = (props: SummaryComponentProps) => {
 
   const {records, simulationEndingDate, simulationStartDate} = props
 
-  const summary = records.reduce<{
-    readonly totalExpenses: number,
-    readonly totalIncome: number
-  }>((acc, cur: Report) => {
+  const summary = records.reduce<Summary>((acc, cur: Report) => {
+
+    const recordExpenses = cur.type === "Expense" ? cur.amount : 0
+    const recordIncome = cur.type === "Income" ? cur.amount : 0
+
     return {
-      totalExpenses: acc.totalExpenses + cur.totalMonthExpenses,
-      totalIncome: acc.totalIncome + cur.income
+      totalExpenses: acc.totalExpenses + recordExpenses,
+      totalIncome: acc.totalIncome + recordIncome
     }
   }, {totalExpenses: 0, totalIncome: 0})
 

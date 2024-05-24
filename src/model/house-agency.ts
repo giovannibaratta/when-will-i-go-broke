@@ -1,6 +1,12 @@
 // Interface to represent house costs
-import {MonthlyReport, Period} from "./monthly-report.ts"
+import {
+  Report,
+  Period,
+  ReportGenerator,
+  ReportsGenerator
+} from "./monthly-report.ts"
 import {dateToPeriod, isSamePeriod} from "../utils/date.ts"
+import {HOUSE_CATEGORY} from "./house.ts"
 
 export type HouseAgencyCosts = (FixedAgencyCosts | VariableAgencyCosts) & {
   tax: Tax
@@ -29,41 +35,38 @@ interface VariableAgencyCosts {
   percentage: number
 }
 
-export type HouseAgencyCostsCalculator = HouseAgencyCosts & {
-  computeMonthlyReport: (period: Period) => MonthlyReport
-}
+export type HouseAgencyCostsCalculator = HouseAgencyCosts & ReportGenerator
 
-export function buildHouseAgencyExpensesCalculator(config: HouseAgencyCosts): HouseAgencyCostsCalculator {
+export function buildHouseAgencyExpensesCalculator(
+  config: HouseAgencyCosts
+): HouseAgencyCostsCalculator {
   return {
     ...config,
-    computeMonthlyReport: computeMonthlyCosts(config)
+    generateReports: computeMonthlyCosts(config)
   }
 }
 
-const HOUSE_COMPONENT = "House"
-
-function computeMonthlyCosts(agencyCosts: HouseAgencyCosts): (period: Period) => MonthlyReport {
-
+function computeMonthlyCosts(agencyCosts: HouseAgencyCosts): ReportsGenerator {
   const houseTransactionPeriod = dateToPeriod(agencyCosts.houseTransactionDate)
 
   return (period: Period) => {
+    const reports: Report[] = []
 
-    const costs = isSamePeriod(period, houseTransactionPeriod) ? computeAgencyCosts(agencyCosts) : 0
-    
-    return {
-      period,
-      totalExpenses: costs,
-      component: HOUSE_COMPONENT,
-      totalIncome: 0,
-      detailedExpenses: {
-        ...(costs > 0 ? {costs} : {})
-      }
+    if (isSamePeriod(period, houseTransactionPeriod)) {
+      reports.push({
+        period,
+        category: HOUSE_CATEGORY,
+        component: AGENCY_PARCEL_COMPONENT,
+        amount: computeAgencyCosts(agencyCosts),
+        type: "Expense"
+      })
     }
+
+    return reports
   }
 }
 
 function computeAgencyCosts(agencyCosts: HouseAgencyCosts): number {
-
   let amount: number
 
   switch (agencyCosts.type) {
@@ -71,13 +74,17 @@ function computeAgencyCosts(agencyCosts: HouseAgencyCosts): number {
       amount = agencyCosts.parcel
       break
     case "variable":
-      amount = agencyCosts.totalHouseCosts * agencyCosts.percentage / 100
+      amount = (agencyCosts.totalHouseCosts * agencyCosts.percentage) / 100
       break
   }
 
   if (agencyCosts.tax.type === "beforeTax") {
-    amount *= (1 + agencyCosts.tax.vatPercentage / 100)
+    amount *= 1 + agencyCosts.tax.vatPercentage / 100
   }
 
   return amount
 }
+
+export const AGENCY_PARCEL_COMPONENT = "Agency parcel"
+
+export type HouseAgencyComponents = typeof AGENCY_PARCEL_COMPONENT
