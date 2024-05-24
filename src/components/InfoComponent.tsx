@@ -1,6 +1,6 @@
 import React from "react"
 import {Alert, Box, Container, List, ListItemText, Typography} from "@mui/material"
-import logo from "../../public/logo-no-background.png"
+import logo from "/logo-no-background.png"
 
 interface InfoComponentProps {
 }
