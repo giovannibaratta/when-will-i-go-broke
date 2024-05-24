@@ -11,23 +11,25 @@ interface MiscellaneousCosts {
 }
 
 export type MiscellaneousCostsCalculator = MiscellaneousCosts & {
-  computeMonthlyReport: (period: Period) => MonthlyReport
+  generateReports: (period: Period) => MonthlyReport
 }
 
-export function buildMiscellaneousExpensesCalculator(config: MiscellaneousCosts): MiscellaneousCostsCalculator {
+export function buildMiscellaneousExpensesCalculator(
+  config: MiscellaneousCosts
+): MiscellaneousCostsCalculator {
   return {
     ...config,
-    computeMonthlyReport: computeMonthlyCosts(config)
+    generateReports: computeMonthlyCosts(config)
   }
 }
 
-function computeMonthlyCosts(config: MiscellaneousCosts): (period: Period) => MonthlyReport {
-
+function computeMonthlyCosts(
+  config: MiscellaneousCosts
+): (period: Period) => MonthlyReport {
   const {canoneRai, tari} = config
   const tariSplitPayment = tari / TARI_MONTHS.length
 
   return (period: Period): MonthlyReport => {
-
     const isRaiPeriod = period.month === CANONE_RAI_MONTH
     const isTariPeriod = TARI_MONTHS.includes(period.month)
 
@@ -46,6 +48,5 @@ function computeMonthlyCosts(config: MiscellaneousCosts): (period: Period) => Mo
         ...(tariCosts > 0 && {tari: tariCosts})
       }
     }
-
   }
 }

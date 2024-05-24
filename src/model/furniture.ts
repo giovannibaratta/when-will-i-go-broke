@@ -1,6 +1,10 @@
 import {MonthlyReport, Period} from "./monthly-report.ts"
 import {computeMonthlyPaymentForFixedInterestRateLoan} from "../utils/finance.ts"
-import {addMonthsToPeriod, dateToPeriod, isPeriodBetweenStartAndEnd} from "../utils/date.ts"
+import {
+  addMonthsToPeriod,
+  dateToPeriod,
+  isPeriodBetweenStartAndEnd
+} from "../utils/date.ts"
 
 interface FurnitureCosts {
   kitchenCosts: number
@@ -13,18 +17,21 @@ interface FurnitureCosts {
 }
 
 export type FurnitureCostsCalculator = FurnitureCosts & {
-  computeMonthlyReport: (period: Period) => MonthlyReport
+  generateReports: (period: Period) => MonthlyReport
 }
 
-export function buildFurnitureExpensesCalculator(config: FurnitureCosts): FurnitureCostsCalculator {
+export function buildFurnitureExpensesCalculator(
+  config: FurnitureCosts
+): FurnitureCostsCalculator {
   return {
     ...config,
-    computeMonthlyReport: computeMonthlyCosts(config)
+    generateReports: computeMonthlyCosts(config)
   }
 }
 
-function computeMonthlyCosts(config: FurnitureCosts): (period: Period) => MonthlyReport {
-
+function computeMonthlyCosts(
+  config: FurnitureCosts
+): (period: Period) => MonthlyReport {
   const {
     kitchenCosts,
     bathroomCosts,
@@ -35,7 +42,8 @@ function computeMonthlyCosts(config: FurnitureCosts): (period: Period) => Monthl
     interestRatePercentage
   } = config
 
-  const loanAmount = kitchenCosts + bathroomCosts + livingRoomCosts + bedroomCosts
+  const loanAmount =
+    kitchenCosts + bathroomCosts + livingRoomCosts + bedroomCosts
 
   const rate = computeMonthlyPaymentForFixedInterestRateLoan({
     amount: loanAmount,
@@ -47,10 +55,15 @@ function computeMonthlyCosts(config: FurnitureCosts): (period: Period) => Monthl
   const endPeriod = addMonthsToPeriod(startPeriod, loanDurationInMonths)
 
   return (period: Period): MonthlyReport => {
-    const isLoanOngoing = isPeriodBetweenStartAndEnd(period, startPeriod, endPeriod, {
-      includeStart: true,
-      includeEnd: false
-    })
+    const isLoanOngoing = isPeriodBetweenStartAndEnd(
+      period,
+      startPeriod,
+      endPeriod,
+      {
+        includeStart: true,
+        includeEnd: false
+      }
+    )
 
     const totalExpenses = isLoanOngoing ? rate : 0
 
@@ -61,14 +74,13 @@ function computeMonthlyCosts(config: FurnitureCosts): (period: Period) => Monthl
       totalExpenses,
       detailedExpenses: {
         ...(totalExpenses > 0 && {
-          kitchen: kitchenCosts / loanAmount * totalExpenses,
-          bathroom: bathroomCosts / loanAmount * totalExpenses,
-          livingRoom: livingRoomCosts / loanAmount * totalExpenses,
-          bedroom: bedroomCosts / loanAmount * totalExpenses
+          kitchen: (kitchenCosts / loanAmount) * totalExpenses,
+          bathroom: (bathroomCosts / loanAmount) * totalExpenses,
+          livingRoom: (livingRoomCosts / loanAmount) * totalExpenses,
+          bedroom: (bedroomCosts / loanAmount) * totalExpenses
         })
       }
     }
-
   }
 }
 

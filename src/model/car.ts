@@ -1,7 +1,21 @@
-import {MonthlyReport, Period} from "./monthly-report.ts"
-import {dateToPeriod, getFirstDayOfNextMonthsFrom, isPeriodBetweenStartAndEnd, isSamePeriod} from "../utils/date.ts"
+import {
+  Report,
+  Period,
+  Calculator,
+  PeriodCalculator,
+  ExpenseReport
+} from "./monthly-report.ts"
+import {
+  dateToPeriod,
+  getFirstDayOfNextMonthsFrom,
+  isPeriodBetweenStartAndEnd,
+  isSamePeriod
+} from "../utils/date.ts"
 
-export type CarExpenses = CarMonthlyRateOnly | CarUpfrontOnly | CarMonthlyRateAndUpfront
+export type CarExpenses =
+  | CarMonthlyRateOnly
+  | CarUpfrontOnly
+  | CarMonthlyRateAndUpfront
 
 export interface CarMonthlyRateOnly {
   type: "CarMonthlyRateOnly"
@@ -24,91 +38,133 @@ export interface CarMonthlyRateAndUpfront {
   upfront: number
 }
 
-type CarCalculator = (period: Period) => MonthlyReport
+export type CarExpensesCalculator = CarExpenses & Calculator
 
-export type CarExpensesCalculator = CarExpenses & {
-  computeMonthlyReport: CarCalculator
-}
-
-export function buildCarExpensesCalculator(config: CarExpenses): CarExpensesCalculator {
-  let calculator: CarExpensesCalculator
+export function buildCarExpensesCalculator(
+  config: CarExpenses
+): CarExpensesCalculator {
+  let generateReports: PeriodCalculator
 
   switch (config.type) {
     case "CarMonthlyRateAndUpfront":
-      calculator = {...config, computeMonthlyReport: monthlyRateAndUpfrontCalculator(config)}
+      generateReports = monthlyRateAndUpfrontCalculator(config)
       break
     case "CarUpfrontOnly":
-      calculator = {...config, computeMonthlyReport: upfrontOnlyCalculator(config)}
+      generateReports = upfrontOnlyCalculator(config)
       break
     case "CarMonthlyRateOnly":
-      calculator = {...config, computeMonthlyReport: monthlyRateCalculator(config)}
+      generateReports = monthlyRateCalculator(config)
       break
   }
 
-  return calculator
-}
-
-const COMPONENT_NAME = "Car"
-
-function upfrontOnlyCalculator(config: CarUpfrontOnly): CarCalculator {
-  return function(period: Period): MonthlyReport {
-    const totalExpenses = doesPeriodAndDateMatch(config.date, period) ? config.upfront : 0
-    return {
-      component: COMPONENT_NAME,
-      totalIncome: 0,
-      period,
-      totalExpenses,
-      detailedExpenses: {
-        ...(totalExpenses > 0 && {"upfront": totalExpenses})
-      }
-    }
+  return {
+    ...config,
+    generateReports
   }
 }
 
-function monthlyRateAndUpfrontCalculator(config: CarMonthlyRateAndUpfront): CarCalculator {
-  return function(period: Period): MonthlyReport {
+function upfrontOnlyCalculator(config: CarUpfrontOnly): PeriodCalculator {
+  return function (period: Period): ReadonlyArray<Report> {
+    const totalExpenses = doesPeriodAndDateMatch(config.date, period)
+      ? config.upfront
+      : 0
+
+    const reports: Report[] = []
+
+    if (totalExpenses > 0) {
+      const report = buildCarReport({
+        period,
+        amount: totalExpenses,
+        component: UPFRONT_PAYMENT
+      })
+
+      reports.push(report)
+    }
+
+    return reports
+  }
+}
+
+function monthlyRateAndUpfrontCalculator(
+  config: CarMonthlyRateAndUpfront
+): PeriodCalculator {
+  return function (period: Period): ReadonlyArray<Report> {
     const monthlyRate = isPeriodIncludedInInterval(period, {
       start: config.startDate,
       durationInMonths: config.duration
-    }) ? config.monthlyRate : 0
+    })
+      ? config.monthlyRate
+      : 0
 
-    const upfrontCost = doesPeriodAndDateMatch(config.startDate, period) ? config.upfront : 0
+    const upfrontCost = doesPeriodAndDateMatch(config.startDate, period)
+      ? config.upfront
+      : 0
 
-    return {
-      period,
-      component: COMPONENT_NAME,
-      totalIncome: 0,
-      totalExpenses: monthlyRate + upfrontCost,
-      detailedExpenses: {
-        ...(upfrontCost > 0 && {"upfront": upfrontCost}),
-        ...(monthlyRate > 0 && {"monthlyRate": monthlyRate})
-      }
+    const reports: Report[] = []
+
+    if (monthlyRate > 0) {
+      const report = buildCarReport({
+        period,
+        amount: monthlyRate,
+        component: MONTHLY_RATE
+      })
+
+      reports.push(report)
     }
 
+    if (upfrontCost > 0) {
+      const report = buildCarReport({
+        period,
+        amount: upfrontCost,
+        component: UPFRONT_PAYMENT
+      })
+
+      reports.push(report)
+    }
+
+    return reports
   }
 }
 
-function monthlyRateCalculator(config: CarMonthlyRateOnly): CarCalculator {
-  return function(period: Period): MonthlyReport {
+function monthlyRateCalculator(config: CarMonthlyRateOnly): PeriodCalculator {
+  return function (period: Period): ReadonlyArray<Report> {
     const totalExpenses = isPeriodIncludedInInterval(period, {
       start: config.startDate,
       durationInMonths: config.duration
-    }) ? config.monthlyRate : 0
-    return {
-      component: COMPONENT_NAME,
-      totalIncome: 0,
-      period,
-      totalExpenses,
-      detailedExpenses: {
-        ...(totalExpenses > 0 && {"monthlyRate": totalExpenses})
-      }
+    })
+      ? config.monthlyRate
+      : 0
+
+    const reports: Report[] = []
+
+    if (totalExpenses > 0) {
+      reports.push(
+        buildCarReport({
+          period,
+          amount: totalExpenses,
+          component: MONTHLY_RATE
+        })
+      )
     }
+
+    return reports
   }
 }
 
-function isPeriodIncludedInInterval(period: Period, interval: {start: Date, durationInMonths: number}): boolean {
+export const CAR_CATEGORY = "Car"
+const UPFRONT_PAYMENT = "UPFRONT_PAYMENT"
+const MONTHLY_RATE = "MONTHLY_RATE"
+
+export type CarComponents = typeof UPFRONT_PAYMENT | typeof MONTHLY_RATE
+
+function isPeriodIncludedInInterval(
+  period: Period,
+  interval: {start: Date; durationInMonths: number}
+): boolean {
   const startPeriod = dateToPeriod(interval.start)
-  const endPeriod = dateToPeriod(getFirstDayOfNextMonthsFrom(interval.start, interval.durationInMonths))
+  const endPeriod = dateToPeriod(
+    getFirstDayOfNextMonthsFrom(interval.start, interval.durationInMonths)
+  )
 
   return isPeriodBetweenStartAndEnd(period, startPeriod, endPeriod, {
     includeStart: true,
@@ -118,4 +174,18 @@ function isPeriodIncludedInInterval(period: Period, interval: {start: Date, dura
 
 function doesPeriodAndDateMatch(date: Date, period: Period): boolean {
   return isSamePeriod(dateToPeriod(date), period)
+}
+
+function buildCarReport(
+  data: Pick<ExpenseReport, "amount" | "component" | "period">
+): Report {
+  const {amount, component, period} = data
+
+  return {
+    category: CAR_CATEGORY,
+    type: "Expense",
+    amount,
+    component,
+    period
+  }
 }

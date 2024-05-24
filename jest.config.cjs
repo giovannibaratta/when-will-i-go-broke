@@ -27,5 +27,5 @@ module.exports = {
     // Css files need to be handled with the library identity-obj-proxy
     // Otherwise they will result in errors when running tests
     "\\.(css|less|scss|sass)$": "identity-obj-proxy"
-  }
+  },
 }

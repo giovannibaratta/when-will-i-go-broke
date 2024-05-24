@@ -35,6 +35,7 @@ import {Info} from "./components/InfoComponent.tsx"
 import {MiscellaneousCostsComponent} from "./components/MiscellaneousComponent.tsx"
 import MiscellaneousServicesTwoToneIcon from "@mui/icons-material/MiscellaneousServicesTwoTone"
 import {buildMiscellaneousExpensesCalculator} from "./model/miscellaneous.ts"
+import {MonthlyReport} from "./model/monthly-report.ts"
 
 const ONE_YEAR_IN_MS = 1 * 1000 * 60 * 60 * 24 * 365
 
@@ -122,6 +123,8 @@ function App() {
     canoneRai: miscellaneousState.canoneRai
   })
 
+  const monthlyReport: MonthlyReport[] = []
+
   while (simulationCurrentDate.getTime() < simulationEndingDate.getTime()) {
 
     const period = {
@@ -129,12 +132,14 @@ function App() {
       year: simulationCurrentDate.getFullYear()
     }
 
-    const carReport = carExpensesCalculator.computeMonthlyReport(period)
-    const incomeReport = incomeCalculator.computeMonthlyReport(period)
-    const houseReport = houseCalculator.computeMonthlyReport(period)
-    const furnitureReport = furnitureCalculator.computeMonthlyReport(period)
-    const houseAgencyReport = houseAgencyCalculator.computeMonthlyReport(period)
-    const miscellaneuousCostsReport = miscellaneousCostsCalculator.computeMonthlyReport(period)
+    const carReport = carExpensesCalculator.generateReports(period)
+    const incomeReport = incomeCalculator.generateReports(period)
+    const houseReport = houseCalculator.generateReports(period)
+    const furnitureReport = furnitureCalculator.generateReports(period)
+    const houseAgencyReport = houseAgencyCalculator.generateReports(period)
+    const miscellaneousCostsReport = miscellaneousCostsCalculator.generateReports(period)
+
+    monthlyReport.push(carReport, incomeReport, houseReport, furnitureReport, houseAgencyReport, miscellaneousCostsReport)
 
     const record: Report = {
       date: simulationCurrentDate,
@@ -144,7 +149,7 @@ function App() {
         houseReport.totalExpenses +
         furnitureReport.totalExpenses +
         houseAgencyReport.totalExpenses +
-        miscellaneuousCostsReport.totalExpenses
+        miscellaneousCostsReport.totalExpenses
     }
 
     records.push(record)
@@ -261,7 +266,7 @@ function App() {
             <Route path="/summary" element={<SummaryComponent simulationStartDate={simulationStartDate}
                                                               simulationEndingDate={simulationEndingDate}
                                                               records={records} />} />
-            <Route path="/projection" element={<CostsProjectionComponent data={records} />} />
+            <Route path="/projection" element={<CostsProjectionComponent data={records} dataNew={monthlyReport} />} />
             <Route path="/income" element={<IncomeComponent />} />
             <Route path="/car" element={<CarComponent disabled={false} />} />
             <Route path="/house" element={<HouseComponent />} />

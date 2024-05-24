@@ -3,28 +3,31 @@ import {MonthlyReport, Period} from "./monthly-report.ts"
 import {computeMonthlyPaymentForFixedInterestRateLoan} from "../utils/finance.ts"
 
 interface HouseCosts {
-  totalHouseCost: number;
-  ltvPercentage: number;
-  interestRate: number;
-  durationInYears: number;
+  totalHouseCost: number
+  ltvPercentage: number
+  interestRate: number
+  durationInYears: number
   startDate: Date
 }
 
 export type HouseCostsCalculator = HouseCosts & {
-  computeMonthlyReport: (period: Period) => MonthlyReport
+  generateReports: (period: Period) => MonthlyReport
 }
 
-export function buildHouseExpensesCalculator(config: HouseCosts): HouseCostsCalculator {
+export function buildHouseExpensesCalculator(
+  config: HouseCosts
+): HouseCostsCalculator {
   return {
     ...config,
-    computeMonthlyReport: computeMonthlyCosts(config)
+    generateReports: computeMonthlyCosts(config)
   }
 }
 
-function computeMonthlyCosts(houseCosts: HouseCosts): (period: Period) => MonthlyReport {
-
+function computeMonthlyCosts(
+  houseCosts: HouseCosts
+): (period: Period) => MonthlyReport {
   const rate = computeMonthlyPaymentForFixedInterestRateLoan({
-    amount: houseCosts.totalHouseCost * houseCosts.ltvPercentage / 100,
+    amount: (houseCosts.totalHouseCost * houseCosts.ltvPercentage) / 100,
     annualInterestRateInPercent: houseCosts.interestRate,
     durationInMonths: houseCosts.durationInYears * 12
   })
@@ -35,14 +38,23 @@ function computeMonthlyCosts(houseCosts: HouseCosts): (period: Period) => Monthl
   }
 
   return (period: Period) => {
-    const isFirstPayment = period.year === houseCosts.startDate.getFullYear() &&
+    const isFirstPayment =
+      period.year === houseCosts.startDate.getFullYear() &&
       period.month === houseCosts.startDate.getMonth()
 
-    const isPeriodAfterOrEqualStartDate = period.year > houseCosts.startDate.getFullYear() || period.year === houseCosts.startDate.getFullYear() && period.month >= houseCosts.startDate.getMonth()
-    const isPeriodBeforeOrEqualEndPeriod = period.year < endPeriod.year || (period.year === endPeriod.year && period.month <= endPeriod.month)
-    const isPeriodInPayment = isPeriodAfterOrEqualStartDate && isPeriodBeforeOrEqualEndPeriod
+    const isPeriodAfterOrEqualStartDate =
+      period.year > houseCosts.startDate.getFullYear() ||
+      (period.year === houseCosts.startDate.getFullYear() &&
+        period.month >= houseCosts.startDate.getMonth())
+    const isPeriodBeforeOrEqualEndPeriod =
+      period.year < endPeriod.year ||
+      (period.year === endPeriod.year && period.month <= endPeriod.month)
+    const isPeriodInPayment =
+      isPeriodAfterOrEqualStartDate && isPeriodBeforeOrEqualEndPeriod
 
-    const downPayment = isFirstPayment ? houseCosts.totalHouseCost * (1 - houseCosts.ltvPercentage / 100) : 0
+    const downPayment = isFirstPayment
+      ? houseCosts.totalHouseCost * (1 - houseCosts.ltvPercentage / 100)
+      : 0
     const monthlyPayment = isPeriodInPayment ? rate : 0
 
     return {
