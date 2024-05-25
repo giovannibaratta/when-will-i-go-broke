@@ -3,4 +3,5 @@ export interface CarState {
   upfrontPayment: number
   monthlyRate: number
   startPaymentDateIsoString: string
+  insuranceCost: number
 }

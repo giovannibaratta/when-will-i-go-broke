@@ -35,6 +35,8 @@ export interface CarMonthlyRateAndUpfront {
   duration: number
   startDate: Date
   upfront: number
+  insuranceCost: number
+  insurancePaymentMonth: number
 }
 
 export type CarExpensesCalculator = CarExpenses & ReportGenerator
@@ -111,6 +113,18 @@ function monthlyRateAndUpfrontCalculator(
       reports.push(report)
     }
 
+    if (
+      period.month === config.insurancePaymentMonth
+    ) {
+      const report = buildCarReport({
+        period,
+        amount: config.insuranceCost,
+        component: INSURANCE_COST_CATEGORY
+      })
+
+      reports.push(report)
+    }
+
     return reports
   }
 }
@@ -174,7 +188,9 @@ function buildCarReport(
 export const CAR_CATEGORY = "Car"
 export const UPFRONT_PAYMENT_CATEGORY = "UpfrontPayment"
 export const MONTHLY_RATE_CATEGORY = "MonthlyRate"
+export const INSURANCE_COST_CATEGORY = "InsuranceCost"
 
 export type CarComponents =
   | typeof UPFRONT_PAYMENT_CATEGORY
   | typeof MONTHLY_RATE_CATEGORY
+  | typeof INSURANCE_COST_CATEGORY

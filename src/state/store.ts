@@ -1,5 +1,5 @@
 import {combineReducers, configureStore} from "@reduxjs/toolkit"
-import carReducer from "./car/car-reducer.ts"
+import carReducer, {INSURANCE_COST_DEFAULT_VALUE} from "./car/car-reducer.ts"
 import {useDispatch, useSelector} from "react-redux"
 import incomeReducer from "./income/income-reducer.ts"
 import settingsReducer from "./settings/settings-reducer.ts"
@@ -29,13 +29,24 @@ const migrations = {
         tari: TARI_DEFAULT_VALUE
       }
     }
+  },
+  // @ts-expect-error The old state is not typed and redux-persist does
+  // not expose the types
+  2: (state) => {
+    return {
+      ...state,
+      car: {
+        ...state.car,
+        insuranceCost: INSURANCE_COST_DEFAULT_VALUE
+      }
+    }
   }
 }
 
 const persistConfig = {
   key: "when-i-will-go-broke-primary",
   storage,
-  version: 1,
+  version: 2,
   migrate: createMigrate(migrations)
 }
 

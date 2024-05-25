@@ -6,6 +6,7 @@ import {either} from "fp-ts"
 import {NumericInputField} from "./shared/NumericInputField.tsx"
 import {
   setDuration as setDurationAction,
+  setInsuranceCost as setInsuranceCostAction,
   setMonthlyRateAction,
   setStartPaymentDateAction,
   setUpfrontAction
@@ -29,6 +30,7 @@ export const CarComponent: React.FC<CarProps> = (props: CarProps) => {
   const [monthlyRate, setMonthlyRate] = useState<number>(state.monthlyRate)
   const [upfront, setUpfront] = useState<number>(state.upfrontPayment)
   const [startPayingFrom, setStartPayingFrom] = useState<Date>(datePickerMinDate)
+  const [insuranceCost, setInsuranceCost] = useState<number>(state.insuranceCost)
 
   const onDurationChange = (value: number) => {
     setDuration(value)
@@ -47,6 +49,10 @@ export const CarComponent: React.FC<CarProps> = (props: CarProps) => {
       setStartPayingFrom(value.toDate())
   }
 
+  const onInsuranceCostChange = (value: number) => {
+    setInsuranceCost(value)
+  }
+
   useEffect(() => {
     dispatch(setDurationAction(duration))
   }, [dispatch, duration])
@@ -63,6 +69,10 @@ export const CarComponent: React.FC<CarProps> = (props: CarProps) => {
     dispatch(setStartPaymentDateAction(startPayingFrom.toDateString()))
   }, [dispatch, startPayingFrom])
 
+  useEffect(() => {
+    dispatch(setInsuranceCostAction(insuranceCost))
+  }, [dispatch, insuranceCost])
+
   return (
     <Paper elevation={1}>
       <Title>Car</Title>
@@ -71,6 +81,8 @@ export const CarComponent: React.FC<CarProps> = (props: CarProps) => {
                           disabled={props.disabled} />
       <CurrencyInputField label={"Upfront Payment"} onValueChange={onUpfrontChange}
                           validate={validateGreaterOrEqualToZero} defaultValue={upfront} disabled={props.disabled} />
+      <CurrencyInputField label={"Insurance Cost per Year"} onValueChange={onInsuranceCostChange}
+                          validate={validateGreaterOrEqualToZero} defaultValue={insuranceCost} disabled={props.disabled} />
       <DatePicker defaultValue={dayjs(datePickerMinDate)} label="Start payment from" views={["month", "year"]}
                   minDate={dayjs(datePickerMinDate)} onChange={onStartPaymentFromChange} disabled={props.disabled} />
       <NumericInputField label={"Duration"} validate={validateGreaterOrEqualToZero} defaultValue={duration}

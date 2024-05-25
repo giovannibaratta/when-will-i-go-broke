@@ -1,11 +1,12 @@
 import {
   buildCarExpensesCalculator,
   CAR_CATEGORY,
-  CarMonthlyRateAndUpfront,
   CarMonthlyRateOnly,
+  CarMonthlyRateAndUpfront,
   CarUpfrontOnly,
   MONTHLY_RATE_CATEGORY,
-  UPFRONT_PAYMENT_CATEGORY
+  UPFRONT_PAYMENT_CATEGORY,
+  INSURANCE_COST_CATEGORY
 } from "./car.ts"
 import {Period} from "./monthly-report.ts"
 import {dateToPeriod} from "../utils/date.ts"
@@ -102,7 +103,9 @@ describe("buildCarExpensesCalculator", () => {
       monthlyRate: 100,
       duration: 12,
       startDate: new Date(2023, 10, 1),
-      upfront: 1000
+      upfront: 1000,
+      insuranceCost: 600,
+      insurancePaymentMonth: 8
     }
     const calculator = buildCarExpensesCalculator(config)
     const period: Period = dateToPeriod(new Date(2023, 10, 1))
@@ -134,7 +137,7 @@ describe("buildCarExpensesCalculator", () => {
 
   it(
     "should calculate monthly report for CarMonthlyRateAndUpfront for the " +
-      "subsequent periods when the period is within the loan duration",
+    "subsequent periods when the period is within the loan duration",
     () => {
       // Given
       const config: CarMonthlyRateAndUpfront = {
@@ -142,7 +145,9 @@ describe("buildCarExpensesCalculator", () => {
         monthlyRate: 100,
         duration: 12,
         startDate: new Date(2023, 10, 1),
-        upfront: 1000
+        upfront: 1000,
+        insuranceCost: 600,
+        insurancePaymentMonth: 8
       }
       const calculator = buildCarExpensesCalculator(config)
       const period: Period = dateToPeriod(new Date(2023, 11, 1))
@@ -171,7 +176,9 @@ describe("buildCarExpensesCalculator", () => {
       monthlyRate: 100,
       duration: 12,
       startDate: new Date(2023, 10, 1),
-      upfront: 1000
+      upfront: 1000,
+      insuranceCost: 600,
+      insurancePaymentMonth: 8
     }
     const calculator = buildCarExpensesCalculator(config)
     const period: Period = dateToPeriod(new Date(2024, 10, 1))
@@ -181,5 +188,44 @@ describe("buildCarExpensesCalculator", () => {
 
     // Then
     expect(reports).toHaveLength(0)
+  })
+
+  it("should calculate monthly report for CarMonthlyRateAndUpfront when the insurance is paid in August", () => {
+    // Given
+    const config: CarMonthlyRateAndUpfront = {
+      type: "CarMonthlyRateAndUpfront",
+      monthlyRate: 100,
+      duration: 12,
+      startDate: new Date(2023, 10, 1),
+      upfront: 1000,
+      insuranceCost: 600,
+      insurancePaymentMonth: 8
+    }
+    const calculator = buildCarExpensesCalculator(config)
+    const period: Period = dateToPeriod(new Date(2024, 8, 1))
+
+    // When
+    const reports = calculator.generateReports(period)
+
+    // Then
+    expect(reports).toHaveLength(2)
+    expect(reports).toContainEqual(
+      expect.objectContaining({
+        type: "Expense",
+        amount: config.monthlyRate,
+        category: CAR_CATEGORY,
+        component: MONTHLY_RATE_CATEGORY,
+        period
+      })
+    )
+    expect(reports).toContainEqual(
+      expect.objectContaining({
+        type: "Expense",
+        amount: config.insuranceCost,
+        category: CAR_CATEGORY,
+        component: INSURANCE_COST_CATEGORY,
+        period
+      })
+    )
   })
 })

@@ -57,7 +57,9 @@ function App() {
     monthlyRate: carState.monthlyRate,
     duration: carState.duration,
     startDate: new Date(carState.startPaymentDateIsoString),
-    upfront: carState.upfrontPayment
+    upfront: carState.upfrontPayment,
+    insuranceCost: carState.insuranceCost,
+    insurancePaymentMonth: 8
   })
 
   const growth: GrowthOptions = incomeState.yoyGrowth.type === "GrowthDisable" ? {
@@ -120,7 +122,7 @@ function App() {
     canoneRai: miscellaneousState.canoneRai
   })
 
- const reports : Report[] = []
+  const reports : Report[] = []
 
   while (simulationCurrentDate.getTime() < simulationEndingDate.getTime()) {
 
